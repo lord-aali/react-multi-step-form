@@ -14,14 +14,16 @@ export interface CustomMessage {
 const sx: SxProps = {
     width: "100%",
     boxSizing: "border-box",
+    textAlign: "start",
     ".MuiAlert-icon": {
-        ml: "0 !important",
-        mr: "8px !important",
+        marginInlineStart: "0 !important",
+        marginInlineEnd: "8px !important",
         mt: "3px !important",
     },
     ".MuiAlert-message": {
         py: "12px !important",
         width: "100%",
+        textAlign: "start",
     },
 }
 

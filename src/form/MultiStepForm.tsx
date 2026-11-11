@@ -7,7 +7,6 @@ import type {DialogSpec, FormSchema} from "./schema"
 import {resolveTexts} from "./texts"
 import {FormStore, useFormVersion} from "./store"
 import {applyDefaults, collectValues, findStep, isPageValid, pageDialogs} from "./logic"
-import {indexValidators} from "./validators"
 import {ensureSession, insertDataset, loadDraft, saveDraft, updateDataset, uploadFile} from "./api"
 import {DirectionScope} from "./theme/DirectionScope"
 import {contentAnimSx} from "./theme/animations"
@@ -29,45 +28,14 @@ export interface MultiStepFormProps {
 }
 
 export function MultiStepForm(props: MultiStepFormProps) {
-    return (
-        <SnackbarProvider
-            maxSnack={3}
-            anchorOrigin={{vertical: "top", horizontal: "center"}}
-            classes={{containerRoot: "msf-snackbar-container"}}
-        >
-            <FormShell {...props}/>
-        </SnackbarProvider>
-    )
+    return <FormShell {...props}/>
 }
 
-function FormShell({schema, schemaUrl, apiBase: apiBaseProp, onFinished}: MultiStepFormProps) {
-    const {enqueueSnackbar} = useSnackbar()
+function FormShell(props: MultiStepFormProps) {
+    const {schema, schemaUrl} = props
     const [loaded, setLoaded] = useState<FormSchema | null>(schema ?? null)
-    const apiBase = apiBaseProp ?? loaded?.apiBase ?? "/api"
-    const storeRef = useRef<FormStore | null>(null)
-    if (!storeRef.current || storeRef.current.apiBase !== apiBase) {
-        storeRef.current = new FormStore(apiBase)
-    }
-    const store = storeRef.current
-    useFormVersion(store)
-
     const [error, setError] = useState<string>()
-    const [ready, setReady] = useState(false)
-    const [busy, setBusy] = useState(false)
-    const [uploading, setUploading] = useState(false)
-    const [finished, setFinished] = useState(false)
-    const [anim, setAnim] = useState("active")
-    const [pending, setPending] = useState<{ spec: DialogSpec; resolve: (ok: boolean) => void } | null>(null)
-    const ask = useCallback((spec: DialogSpec) => {
-        return new Promise<boolean>((resolve) => {
-            setPending({spec, resolve})
-        })
-    }, [])
-
-    function closePrompt(ok: boolean) {
-        pending?.resolve(ok)
-        setPending(null)
-    }
+    const dir = loaded?.dir === "ltr" ? "ltr" : "rtl"
 
     useEffect(() => {
         if (schema) {
@@ -98,9 +66,58 @@ function FormShell({schema, schemaUrl, apiBase: apiBaseProp, onFinished}: MultiS
         }
     }, [schema, schemaUrl])
 
+    return (
+        <DirectionScope dir={dir}>
+            <SnackbarProvider
+                maxSnack={3}
+                anchorOrigin={{vertical: "top", horizontal: "center"}}
+                classes={{containerRoot: "msf-snackbar-container"}}
+            >
+                <FormSession {...props} loaded={loaded} error={error} dir={dir}/>
+            </SnackbarProvider>
+        </DirectionScope>
+    )
+}
+
+function FormSession({
+    apiBase: apiBaseProp,
+    onFinished,
+    loaded,
+    error,
+    dir,
+}: MultiStepFormProps & {
+    loaded: FormSchema | null
+    error?: string
+    dir: "rtl" | "ltr"
+}) {
+    const {enqueueSnackbar} = useSnackbar()
+    const apiBase = apiBaseProp ?? loaded?.apiBase ?? "/api"
+    const storeRef = useRef<FormStore | null>(null)
+    if (!storeRef.current || storeRef.current.apiBase !== apiBase) {
+        storeRef.current = new FormStore(apiBase)
+    }
+    const store = storeRef.current
+    useFormVersion(store)
+
+    const [ready, setReady] = useState(false)
+    const [busy, setBusy] = useState(false)
+    const [uploading, setUploading] = useState(false)
+    const [finished, setFinished] = useState(false)
+    const [anim, setAnim] = useState("active")
+    const [pending, setPending] = useState<{ spec: DialogSpec; resolve: (ok: boolean) => void } | null>(null)
+    const ask = useCallback((spec: DialogSpec) => {
+        return new Promise<boolean>((resolve) => {
+            setPending({spec, resolve})
+        })
+    }, [])
+
+    function closePrompt(ok: boolean) {
+        pending?.resolve(ok)
+        setPending(null)
+    }
+
     const texts = useMemo(() => resolveTexts(loaded?.texts), [loaded])
-    const dir = loaded?.dir === "ltr" ? "ltr" : "rtl"
-    const validators = useMemo(() => indexValidators(loaded?.validators), [loaded])
+    const validators = {}
 
     useEffect(() => {
         if (!loaded) return
@@ -236,22 +253,28 @@ function FormShell({schema, schemaUrl, apiBase: apiBaseProp, onFinished}: MultiS
     const backIcon = dir === "rtl" ? <ArrowForwardIosIcon sx={{fontSize: 14}}/> : <ArrowBackIosNewIcon sx={{fontSize: 14}}/>
 
     return (
-        <DirectionScope dir={dir}>
+        <>
             <CssBaseline/>
             <GlobalStyles styles={{
+                ".msf-snackbar-container": {
+                    direction: dir,
+                },
                 ".msf-snackbar-container .notistack-Snackbar": {
                     width: "100%",
                     maxWidth: 420,
                     boxSizing: "border-box",
+                    direction: dir,
                 },
                 ".msf-snackbar-container .notistack-MuiContent": {
                     width: "100%",
                     backgroundColor: "unset",
                     padding: 0,
                     boxShadow: "unset",
+                    direction: dir,
                 },
                 ".msf-snackbar-container .msf-snackbar": {
                     width: "100%",
+                    direction: dir,
                 },
                 ".MuiPaper-root[role=dialog]": {borderRadius: "16px"},
             }}/>
@@ -378,7 +401,7 @@ function FormShell({schema, schemaUrl, apiBase: apiBaseProp, onFinished}: MultiS
                     ) : null}
                 </Box>
             </FormContextProvider>
-        </DirectionScope>
+        </>
     )
 }
 

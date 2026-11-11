@@ -34,7 +34,6 @@ export interface FieldBase {
     visibleWhen?: ShowWhen | ShowWhen[]
     match?: "all" | "any"
     dialogs?: FieldDialogs
-    validators?: string[]
     errorMessage?: string
     errorMessages?: Record<string, string>
 }
@@ -43,11 +42,17 @@ export type ValidationRule =
     | { type: "required"; message?: string }
     | { type: "persianName"; message?: string }
     | { type: "digits"; message?: string }
+    | { type: "numeric"; allowDecimal?: boolean; message?: string }
+    | { type: "chars"; chars: string; message?: string }
     | { type: "minLength"; value: number; message?: string }
     | { type: "maxLength"; value: number; message?: string }
+    | { type: "length"; min?: number; max?: number; message?: string }
+    | { type: "range"; min?: number; max?: number; message?: string }
     | { type: "pattern"; value: string; message?: string }
     | { type: "email"; message?: string }
+    | { type: "jalaliDate"; message?: string }
 
+/** Runtime validator shape used by the validation engine (converted from field `rules`). */
 export type FormValidator =
     | {
         slug: string
@@ -109,6 +114,10 @@ export interface TextFieldSchema extends FieldBase {
     placeholder?: string
     inputType?: "text" | "tel" | "email" | "number"
     required?: boolean
+    /** Minimum input length. Also enforced during validation when the field has a value. */
+    min?: number
+    /** Maximum input length. Applied as the input `maxLength` and blocks longer typing. */
+    max?: number
     rules?: ValidationRule[]
     defaultValue?: string
 }
@@ -276,6 +285,5 @@ export interface FormSchema {
     apiBase?: string
     dir?: Direction
     texts?: Partial<FormTexts>
-    validators?: FormValidator[]
     pages: FormPage[]
 }

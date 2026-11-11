@@ -17,9 +17,9 @@ const SESSION_COOKIE = 'msf_session';
 const STORAGE_DIR = __DIR__ . '/../storage';
 
 /** When true, send Access-Control-* headers and answer OPTIONS preflight. */
-const CORS_ENABLED = false;
+const CORS_ENABLED = true;
 /** Allowed origin. Use a concrete origin (not *) when the browser sends cookies. */
-const CORS_ORIGIN = '*';
+const CORS_ORIGIN = 'http://localhost:5173';
 
 const TABLES = [
     [

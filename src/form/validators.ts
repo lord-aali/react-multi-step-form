@@ -1,4 +1,4 @@
-import type {FormItem, FormTexts, FormValidator, ValidationRule} from "./schema"
+import type {FormItem, FormTexts, FormValidator, TextFieldSchema, ValidationRule} from "./schema"
 import {validateNumbers, validatePersianNameField} from "./charValidation"
 
 const DIGITS = /^[0-9]+$/
@@ -29,28 +29,38 @@ function messageFor(
         || (empty ? texts.required : texts.invalid)
 }
 
-export function resolveFieldValidators(item: FormItem, map: ValidatorMap): FormValidator[] {
+export function resolveFieldValidators(item: FormItem, _map: ValidatorMap = {}): FormValidator[] {
     if (item.type === "typography") return []
 
-    if (item.validators !== undefined) {
-        return item.validators.map((slug) => map[slug]).filter((entry): entry is FormValidator => !!entry)
-    }
+    const out: FormValidator[] = []
 
     if (item.type === "text" && item.rules?.length) {
-        return item.rules.map((rule, index) =>
-            legacyRuleAsValidator(rule, `__legacy_${item.name}_${rule.type}_${index}`),
-        )
+        for (const rule of item.rules) {
+            out.push(ruleAsValidator(rule))
+        }
     }
 
-    if ("required" in item && item.required === true) {
-        return [{slug: "__legacy_required", type: "required", message: item.errorMessage}]
+    if (item.type === "text" && (item.min !== undefined || item.max !== undefined)) {
+        const hasLengthRule = out.some((entry) => entry.type === "length")
+        if (!hasLengthRule) {
+            out.push({
+                slug: "length",
+                type: "length",
+                min: item.min,
+                max: item.max,
+            })
+        }
     }
 
-    return []
+    if ("required" in item && item.required === true && !out.some((entry) => entry.type === "required")) {
+        out.unshift({slug: "required", type: "required", message: item.errorMessage})
+    }
+
+    return out
 }
 
-export function isFieldRequired(item: FormItem, map: ValidatorMap): boolean {
-    return resolveFieldValidators(item, map).length > 0
+export function isFieldRequired(item: FormItem, map: ValidatorMap = {}): boolean {
+    return resolveFieldValidators(item, map).some((entry) => entry.type === "required")
 }
 
 export function runValidator(
@@ -110,24 +120,34 @@ export function runValidator(
     }
 }
 
-function legacyRuleAsValidator(rule: ValidationRule, slug: string): FormValidator {
+function ruleAsValidator(rule: ValidationRule): FormValidator {
     switch (rule.type) {
         case "digits":
-            return {slug, type: "numeric", message: rule.message}
+            return {slug: "digits", type: "numeric", message: rule.message}
+        case "numeric":
+            return {slug: "numeric", type: "numeric", allowDecimal: rule.allowDecimal, message: rule.message}
         case "persianName":
-            return {slug, type: "persianName", message: rule.message}
+            return {slug: "persianName", type: "persianName", message: rule.message}
+        case "chars":
+            return {slug: "chars", type: "chars", chars: rule.chars, message: rule.message}
         case "minLength":
-            return {slug, type: "length", min: rule.value, message: rule.message}
+            return {slug: "minLength", type: "length", min: rule.value, message: rule.message}
         case "maxLength":
-            return {slug, type: "length", max: rule.value, message: rule.message}
+            return {slug: "maxLength", type: "length", max: rule.value, message: rule.message}
+        case "length":
+            return {slug: "length", type: "length", min: rule.min, max: rule.max, message: rule.message}
+        case "range":
+            return {slug: "range", type: "range", min: rule.min, max: rule.max, message: rule.message}
         case "email":
-            return {slug, type: "email", message: rule.message}
+            return {slug: "email", type: "email", message: rule.message}
         case "pattern":
-            return {slug, type: "pattern", pattern: rule.value, message: rule.message}
+            return {slug: "pattern", type: "pattern", pattern: rule.value, message: rule.message}
+        case "jalaliDate":
+            return {slug: "jalaliDate", type: "jalaliDate", message: rule.message}
         case "required":
-            return {slug, type: "required", message: rule.message}
+            return {slug: "required", type: "required", message: rule.message}
         default:
-            return {slug, type: "required"}
+            return {slug: "required", type: "required"}
     }
 }
 
@@ -142,10 +162,11 @@ export function validateScalarValue(
 
     if (!value) {
         const required = validators.find((entry) => entry.type === "required")
+        if (!required) return undefined
         return messageFor(
             item,
-            required?.slug ?? validators[0].slug,
-            required?.message ?? validators[0].message,
+            required.slug,
+            required.message,
             texts,
             true,
         )
@@ -156,6 +177,12 @@ export function validateScalarValue(
         if (error) return error
     }
     return undefined
+}
+
+/** Clamp a text value to the field's optional `max` length. */
+export function clampTextValue(item: TextFieldSchema, value: string): string {
+    if (item.max === undefined || value.length <= item.max) return value
+    return value.slice(0, item.max)
 }
 
 export {DIGITS, EMAIL, JALALI}

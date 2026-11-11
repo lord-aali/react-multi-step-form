@@ -1,21 +1,10 @@
 import type {FormSchema} from "../form/schema"
-import {DIGIT_CHARS, PERSIAN_CHARS} from "../form/charValidation"
+import {PERSIAN_CHARS} from "../form/charValidation"
 
 export const sampleForm: FormSchema = {
     id: "registration",
     apiBase: "/api",
     dir: "rtl",
-    validators: [
-        {slug: "required", type: "required", message: "این فیلد الزامی است."},
-        {slug: "numeric", type: "numeric", message: "فقط رقم انگلیسی مجاز است."},
-        {slug: "persian-name", type: "persianName", message: "فقط حروف فارسی مجاز است."},
-        {slug: "persian-chars", type: "chars", chars: PERSIAN_CHARS, message: "فقط حروف فارسی مجاز است."},
-        {slug: "digit-chars", type: "chars", chars: DIGIT_CHARS, message: "فقط رقم انگلیسی مجاز است."},
-        {slug: "phone-length", type: "length", min: 11, max: 11, message: "شماره باید ۱۱ رقم باشد."},
-        {slug: "mobile-ir", type: "pattern", pattern: "^09[0-9]{9}$", message: "شماره باید با ۰۹ شروع شود."},
-        {slug: "jalali-date", type: "jalaliDate", message: "تاریخ معتبر نیست."},
-        {slug: "age-range", type: "range", min: 18, max: 80, message: "سن باید بین ۱۸ تا ۸۰ باشد."},
-    ],
     pages: [
         {
             id: "identity",
@@ -32,20 +21,32 @@ export const sampleForm: FormSchema = {
                     type: "text",
                     name: "firstname",
                     label: "نام",
-                    validators: ["required", "persian-name"],
+                    min: 2,
+                    max: 40,
+                    rules: [
+                        {type: "required"},
+                        {type: "persianName", message: "نام را با حروف فارسی بنویسید."},
+                    ],
                     errorMessage: "نام را وارد کنید.",
                     errorMessages: {
-                        "persian-name": "نام را با حروف فارسی بنویسید.",
+                        persianName: "نام را با حروف فارسی بنویسید.",
+                        length: "نام باید بین ۲ تا ۴۰ حرف باشد.",
                     },
                 },
                 {
                     type: "text",
                     name: "lastname",
                     label: "نام خانوادگی",
-                    validators: ["required", "persian-chars"],
+                    min: 2,
+                    max: 50,
+                    rules: [
+                        {type: "required"},
+                        {type: "chars", chars: PERSIAN_CHARS, message: "نام خانوادگی را با حروف فارسی بنویسید."},
+                    ],
                     errorMessage: "نام خانوادگی را وارد کنید.",
                     errorMessages: {
-                        "persian-chars": "نام خانوادگی را با حروف فارسی بنویسید.",
+                        chars: "نام خانوادگی را با حروف فارسی بنویسید.",
+                        length: "نام خانوادگی باید بین ۲ تا ۵۰ حرف باشد.",
                     },
                 },
                 {
@@ -61,19 +62,25 @@ export const sampleForm: FormSchema = {
                     label: "شماره موبایل",
                     inputType: "tel",
                     placeholder: "0912...",
-                    validators: ["required", "numeric", "phone-length", "mobile-ir"],
+                    min: 11,
+                    max: 11,
+                    rules: [
+                        {type: "required"},
+                        {type: "digits", message: "فقط رقم انگلیسی مجاز است."},
+                        {type: "pattern", value: "^09[0-9]{9}$", message: "شماره باید با ۰۹ شروع شود."},
+                    ],
                     errorMessage: "شماره موبایل را وارد کنید.",
                     errorMessages: {
-                        numeric: "فقط رقم انگلیسی مجاز است.",
-                        "phone-length": "شماره باید ۱۱ رقم باشد.",
-                        "mobile-ir": "شماره باید با ۰۹ شروع شود.",
+                        digits: "فقط رقم انگلیسی مجاز است.",
+                        length: "شماره باید ۱۱ رقم باشد.",
+                        pattern: "شماره باید با ۰۹ شروع شود.",
                     },
                 },
                 {
                     type: "radio",
                     name: "gender",
                     label: "جنسیت",
-                    validators: ["required"],
+                    required: true,
                     errorMessage: "لطفاً جنسیت را انتخاب کنید.",
                     options: [
                         {value: "مرد", label: "مرد"},
@@ -90,7 +97,7 @@ export const sampleForm: FormSchema = {
                     type: "agreement",
                     name: "terms",
                     label: "قوانین و شرایط را می‌پذیرم",
-                    validators: ["required"],
+                    required: true,
                     errorMessage: "پذیرش قوانین الزامی است.",
                     terms: {
                         title: "قوانین و شرایط",
@@ -125,7 +132,7 @@ export const sampleForm: FormSchema = {
                     type: "select",
                     name: "city",
                     title: "شهر",
-                    validators: ["required"],
+                    required: true,
                     errorMessage: "شهر را انتخاب کنید.",
                     items: [
                         {
@@ -136,7 +143,7 @@ export const sampleForm: FormSchema = {
                                     type: "select",
                                     name: "district",
                                     title: "منطقه",
-                                    validators: ["required"],
+                                    required: true,
                                     errorMessage: "منطقه را انتخاب کنید.",
                                     items: [
                                         {title: "منطقه ۱", value: "منطقه 1"},
@@ -156,7 +163,7 @@ export const sampleForm: FormSchema = {
                     title: "تاریخ تولد",
                     dialogTitle: "انتخاب تاریخ تولد",
                     placeholder: "تاریخ را انتخاب کنید",
-                    validators: ["required", "jalali-date"],
+                    required: true,
                     errorMessage: "تاریخ تولد را انتخاب کنید.",
                     formatMonthPreview: "string",
                     yearRange: {min: 1330, max: 1405},
@@ -165,7 +172,7 @@ export const sampleForm: FormSchema = {
                     type: "radio",
                     name: "need_photos",
                     label: "عکس مدارک را همین حالا می‌فرستید؟",
-                    validators: ["required"],
+                    required: true,
                     errorMessage: "یکی از گزینه‌ها را انتخاب کنید.",
                     options: [
                         {value: "بله", label: "بله"},
@@ -184,7 +191,7 @@ export const sampleForm: FormSchema = {
                     type: "stage",
                     name: "doc_type",
                     label: "نوع مدرک",
-                    validators: ["required"],
+                    required: true,
                     defaultValue: "کارت",
                     options: [
                         {
@@ -200,7 +207,7 @@ export const sampleForm: FormSchema = {
                                     useRear: true,
                                     allowChangeCamera: false,
                                     aspectRatio: "4/3",
-                                    validators: ["required"],
+                                    required: true,
                                     errorMessage: "تصویر روی کارت الزامی است.",
                                     dialogs: {
                                         onActivate: {
@@ -220,7 +227,7 @@ export const sampleForm: FormSchema = {
                                     camera: "advanced",
                                     useRear: true,
                                     allowChangeCamera: false,
-                                    validators: ["required"],
+                                    required: true,
                                     errorMessage: "تصویر پشت کارت الزامی است.",
                                 },
                             ],
@@ -237,7 +244,7 @@ export const sampleForm: FormSchema = {
                                     camera: "native",
                                     useRear: true,
                                     allowChangeCamera: false,
-                                    validators: ["required"],
+                                    required: true,
                                     errorMessage: "تصویر برگه الزامی است.",
                                 },
                             ],
@@ -257,7 +264,7 @@ export const sampleForm: FormSchema = {
                     placeholder: "عکس پرسنلی",
                     camera: "native",
                     useRear: false,
-                    validators: ["required"],
+                    required: true,
                     errorMessage: "عکس پرسنلی الزامی است.",
                     sources: ["camera", "gallery"],
                 },
@@ -273,7 +280,7 @@ export const sampleForm: FormSchema = {
                     width: 1080,
                     height: 1920,
                     maxFileSize: 80 * 1024 * 1024,
-                    validators: ["required"],
+                    required: true,
                     errorMessage: "ویدیوی احراز هویت الزامی است.",
                     captureHintTop: "به دوربین نگاه کنید و متن را بخوانید.",
                     captureHintBottom: "ویدیو باید در فضای باز و با نور کافی باشد.",

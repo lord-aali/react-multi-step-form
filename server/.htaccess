@@ -1,3 +1,8 @@
 RewriteEngine On
+
+# Deny web access to app internals
+RewriteRule ^(config|core|storage)(/|$) - [F,L]
+
+# Front controller: non-files → index.php
 RewriteCond %{REQUEST_FILENAME} !-f
 RewriteRule ^ index.php [QSA,L]

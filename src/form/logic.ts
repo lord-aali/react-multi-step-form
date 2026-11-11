@@ -140,11 +140,12 @@ export function validateItem(
     validators: ValidatorMap = {},
 ): string | undefined {
     if (item.type === "typography" || !item.name) return undefined
-    if (!isFieldRequired(item, validators)) return undefined
 
     if (item.type === "text") {
         return validateScalarValue(item, String(store.get(item.name) ?? ""), validators, texts)
     }
+
+    if (!isFieldRequired(item, validators)) return undefined
 
     if (item.type === "radio" || item.type === "stage" || item.type === "select") {
         const value = store.get(item.name)
@@ -157,8 +158,6 @@ export function validateItem(
     if (item.type === "date") {
         const value = String(store.get(item.name) ?? "")
         if (!value) return item.errorMessage || texts.required
-        const fromSlugs = validateScalarValue(item, value, validators, texts)
-        if (fromSlugs) return fromSlugs
         if (!JALALI.test(value)) return item.errorMessage || texts.invalid
         return undefined
     }

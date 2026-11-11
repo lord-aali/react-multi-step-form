@@ -28,7 +28,7 @@ export type {
     TypographySchema,
     ValidationRule,
 } from "./form/schema"
-export {indexValidators, isFieldRequired, runValidator} from "./form/validators"
+export {clampTextValue, indexValidators, isFieldRequired, runValidator} from "./form/validators"
 export {looksLikeHtml, sanitizeHtml, resolveRichText} from "./form/richText"
 export {default as RichContent} from "./form/ui/RichContent"
 export {

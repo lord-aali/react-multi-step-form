@@ -4,7 +4,7 @@ import type {TextFieldSchema} from "../schema"
 import {useFormContext} from "../context"
 import {itemError} from "../logic"
 import {useFormVersion} from "../store"
-import {isFieldRequired} from "../validators"
+import {clampTextValue, isFieldRequired} from "../validators"
 import {resolveFieldDir} from "./fieldDirection"
 
 export default function TextFieldItem({item}: { item: TextFieldSchema }) {
@@ -37,6 +37,8 @@ export default function TextFieldItem({item}: { item: TextFieldSchema }) {
                     inputMode: numeric ? "numeric" : undefined,
                     dir: fieldDir,
                     style: {direction: fieldDir},
+                    maxLength: item.max,
+                    minLength: item.min,
                 },
             }}
             sx={{
@@ -53,7 +55,7 @@ export default function TextFieldItem({item}: { item: TextFieldSchema }) {
                 asked.current = false
                 store.markTouched(item.name)
             }}
-            onChange={(event) => store.set(item.name, event.target.value)}
+            onChange={(event) => store.set(item.name, clampTextValue(item, event.target.value))}
         />
     )
 }

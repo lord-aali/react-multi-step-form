@@ -27,10 +27,6 @@ import "react-multi-step-form/style.css"
 const schema: FormSchema = {
   id: "registration",
   dir: "rtl",
-  validators: [
-    { slug: "required", type: "required" },
-    { slug: "persian-name", type: "persianName", message: "نام را فارسی بنویسید." },
-  ],
   texts: {
     next: "مرحله بعد",
     prev: "بازگشت",
@@ -48,7 +44,12 @@ const schema: FormSchema = {
           type: "text",
           name: "firstname",
           label: "نام",
-          validators: ["required", "persian-name"],
+          min: 2,
+          max: 40,
+          rules: [
+            { type: "required" },
+            { type: "persianName", message: "نام را فارسی بنویسید." },
+          ],
           errorMessage: "نام را وارد کنید.",
         },
         {
@@ -120,24 +121,13 @@ Note: `{{field}}` interpolation only runs on **string** content. For ReactNode, 
 
 `visibleWhen` and a page's `skipWhen` use `eq`, `neq`, `in`, `notIn`, `empty`, `notEmpty`, `gt`, and `lt`. `match` is `"all"` (default) or `"any"`. Conditions read the live form values, so typography and skipped pages update as the user types.
 
-### Validators
+### Rules and length limits
 
-Define validators once on the schema, then attach their slugs to fields. A field with no `validators` (or an empty list, or only unknown slugs) is optional. A field with resolved slugs is required and must pass each validator.
+Put validation on each field with `rules`. Non-text fields use `required: true`. Text fields can also set `min` / `max` to limit input length (`max` becomes the input `maxLength` and blocks longer typing).
 
 ```ts
 const schema: FormSchema = {
   id: "driver",
-  validators: [
-    { slug: "required", type: "required", message: "الزامی است." },
-    { slug: "numeric", type: "numeric", message: "فقط رقم." },
-    { slug: "persian-name", type: "persianName", message: "فقط فارسی." },
-    { slug: "digit-chars", type: "chars", chars: "0123456789", message: "فقط رقم." },
-    { slug: "age", type: "range", min: 18, max: 80, message: "۱۸ تا ۸۰." },
-    { slug: "phone-length", type: "length", min: 11, max: 11 },
-    { slug: "mobile", type: "pattern", pattern: "^09[0-9]{9}$" },
-    { slug: "email", type: "email" },
-    { slug: "jalali", type: "jalaliDate" },
-  ],
   pages: [
     {
       id: "identity",
@@ -146,15 +136,44 @@ const schema: FormSchema = {
           type: "text",
           name: "firstname",
           label: "نام",
-          validators: ["required", "persian-name"],
+          min: 2,
+          max: 40,
+          rules: [
+            { type: "required" },
+            { type: "persianName", message: "فقط فارسی." },
+          ],
           errorMessage: "نام را وارد کنید.",
-          errorMessages: { "persian-name": "نام را فارسی بنویسید." },
+          errorMessages: { persianName: "نام را فارسی بنویسید." },
+        },
+        {
+          type: "text",
+          name: "phone",
+          label: "موبایل",
+          inputType: "tel",
+          min: 11,
+          max: 11,
+          rules: [
+            { type: "required" },
+            { type: "digits" },
+            { type: "pattern", value: "^09[0-9]{9}$" },
+          ],
+        },
+        {
+          type: "radio",
+          name: "gender",
+          label: "جنسیت",
+          required: true,
+          options: [
+            { value: "مرد", label: "مرد" },
+            { value: "زن", label: "زن" },
+          ],
         },
         {
           type: "text",
           name: "nickname",
           label: "نام مستعار",
-          // no validators → optional
+          max: 30,
+          // no required rule → optional
         },
       ],
     },
@@ -164,17 +183,17 @@ const schema: FormSchema = {
 
 | type | Purpose |
 | --- | --- |
-| `required` | Field must be filled (use alone on radio, select, file, agreement). |
-| `numeric` | Digits only. Set `allowDecimal: true` for decimals. |
-| `chars` | Every character must appear in `chars` (e.g. `"0123456789"` or Persian letters). |
+| `required` | Field must be filled. |
+| `digits` / `numeric` | Digits only. `numeric` accepts `allowDecimal: true`. |
+| `chars` | Every character must appear in `chars`. |
 | `persianName` | Persian letters and spaces. |
 | `range` | Numeric value between `min` and/or `max`. |
-| `length` | String length between `min` and/or `max`. |
-| `pattern` | JavaScript regex in `pattern`. |
+| `length` / `minLength` / `maxLength` | String length checks (prefer field `min` / `max` for input limiting). |
+| `pattern` | JavaScript regex in `value`. |
 | `email` | Email shape. |
 | `jalaliDate` | `year/month/day` Jalali text. |
 
-`errorMessage` is the empty/required message. `errorMessages` overrides a slug's message on that field.
+`errorMessage` is the empty/required message. `errorMessages` overrides a rule type's message on that field (`persianName`, `digits`, `length`, `pattern`, …).
 
 There is no simple camera mode. `camera: "advanced"` uses `getUserMedia`, an fps ladder for video, and `MediaRecorder`. `camera: "native"` opens the operating-system camera.
 
