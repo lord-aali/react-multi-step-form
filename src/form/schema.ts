@@ -115,9 +115,9 @@ export interface TextFieldSchema extends FieldBase {
     inputType?: "text" | "tel" | "email" | "number"
     required?: boolean
     /** Minimum input length. Also enforced during validation when the field has a value. */
-    min?: number
+    minLength?: number
     /** Maximum input length. Applied as the input `maxLength` and blocks longer typing. */
-    max?: number
+    maxLength?: number
     rules?: ValidationRule[]
     defaultValue?: string
 }

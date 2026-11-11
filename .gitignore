@@ -6,3 +6,4 @@ server/storage/*
 *.log
 *.bak
 .DS_Store
+/server/.pt.dev

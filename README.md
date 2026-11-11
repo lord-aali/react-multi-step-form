@@ -44,8 +44,8 @@ const schema: FormSchema = {
           type: "text",
           name: "firstname",
           label: "نام",
-          min: 2,
-          max: 40,
+          minLength: 2,
+          maxLength: 40,
           rules: [
             { type: "required" },
             { type: "persianName", message: "نام را فارسی بنویسید." },
@@ -123,7 +123,7 @@ Note: `{{field}}` interpolation only runs on **string** content. For ReactNode, 
 
 ### Rules and length limits
 
-Put validation on each field with `rules`. Non-text fields use `required: true`. Text fields can also set `min` / `max` to limit input length (`max` becomes the input `maxLength` and blocks longer typing).
+Put validation on each field with `rules`. Non-text fields use `required: true`. Text fields can set `minLength` / `maxLength` to limit input length (`maxLength` is enforced while typing; `tel` / `number` also strip non-digits).
 
 ```ts
 const schema: FormSchema = {
@@ -136,8 +136,8 @@ const schema: FormSchema = {
           type: "text",
           name: "firstname",
           label: "نام",
-          min: 2,
-          max: 40,
+          minLength: 2,
+          maxLength: 40,
           rules: [
             { type: "required" },
             { type: "persianName", message: "فقط فارسی." },
@@ -150,8 +150,8 @@ const schema: FormSchema = {
           name: "phone",
           label: "موبایل",
           inputType: "tel",
-          min: 11,
-          max: 11,
+          minLength: 11,
+          maxLength: 11,
           rules: [
             { type: "required" },
             { type: "digits" },
@@ -172,7 +172,7 @@ const schema: FormSchema = {
           type: "text",
           name: "nickname",
           label: "نام مستعار",
-          max: 30,
+          maxLength: 30,
           // no required rule → optional
         },
       ],
@@ -188,7 +188,7 @@ const schema: FormSchema = {
 | `chars` | Every character must appear in `chars`. |
 | `persianName` | Persian letters and spaces. |
 | `range` | Numeric value between `min` and/or `max`. |
-| `length` / `minLength` / `maxLength` | String length checks (prefer field `min` / `max` for input limiting). |
+| `length` / `minLength` / `maxLength` | String length checks (prefer field `minLength` / `maxLength` for input limiting). |
 | `pattern` | JavaScript regex in `value`. |
 | `email` | Email shape. |
 | `jalaliDate` | `year/month/day` Jalali text. |

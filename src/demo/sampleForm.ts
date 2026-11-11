@@ -21,8 +21,8 @@ export const sampleForm: FormSchema = {
                     type: "text",
                     name: "firstname",
                     label: "نام",
-                    min: 2,
-                    max: 40,
+                    minLength: 2,
+                    maxLength: 40,
                     rules: [
                         {type: "required"},
                         {type: "persianName", message: "نام را با حروف فارسی بنویسید."},
@@ -37,8 +37,8 @@ export const sampleForm: FormSchema = {
                     type: "text",
                     name: "lastname",
                     label: "نام خانوادگی",
-                    min: 2,
-                    max: 50,
+                    minLength: 2,
+                    maxLength: 50,
                     rules: [
                         {type: "required"},
                         {type: "chars", chars: PERSIAN_CHARS, message: "نام خانوادگی را با حروف فارسی بنویسید."},
@@ -62,8 +62,8 @@ export const sampleForm: FormSchema = {
                     label: "شماره موبایل",
                     inputType: "tel",
                     placeholder: "0912...",
-                    min: 11,
-                    max: 11,
+                    minLength: 11,
+                    maxLength: 11,
                     rules: [
                         {type: "required"},
                         {type: "digits", message: "فقط رقم انگلیسی مجاز است."},

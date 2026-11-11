@@ -4,7 +4,7 @@ import type {TextFieldSchema} from "../schema"
 import {useFormContext} from "../context"
 import {itemError} from "../logic"
 import {useFormVersion} from "../store"
-import {clampTextValue, isFieldRequired} from "../validators"
+import {fieldMaxLength, fieldMinLength, isFieldRequired, sanitizeTextInput} from "../validators"
 import {resolveFieldDir} from "./fieldDirection"
 
 export default function TextFieldItem({item}: { item: TextFieldSchema }) {
@@ -16,6 +16,8 @@ export default function TextFieldItem({item}: { item: TextFieldSchema }) {
     const fieldDir = resolveFieldDir(item, formDir)
     const numeric = item.inputType === "tel" || item.inputType === "number"
     const required = isFieldRequired(item, validators)
+    const maxLength = fieldMaxLength(item)
+    const minLength = fieldMinLength(item)
 
     return (
         <TextField
@@ -35,10 +37,11 @@ export default function TextFieldItem({item}: { item: TextFieldSchema }) {
                 inputLabel: {className: "msf-label"},
                 htmlInput: {
                     inputMode: numeric ? "numeric" : undefined,
+                    pattern: numeric ? "[0-9]*" : undefined,
                     dir: fieldDir,
                     style: {direction: fieldDir},
-                    maxLength: item.max,
-                    minLength: item.min,
+                    maxLength,
+                    minLength,
                 },
             }}
             sx={{
@@ -55,7 +58,7 @@ export default function TextFieldItem({item}: { item: TextFieldSchema }) {
                 asked.current = false
                 store.markTouched(item.name)
             }}
-            onChange={(event) => store.set(item.name, clampTextValue(item, event.target.value))}
+            onChange={(event) => store.set(item.name, sanitizeTextInput(item, event.target.value))}
         />
     )
 }

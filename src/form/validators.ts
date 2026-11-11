@@ -40,14 +40,14 @@ export function resolveFieldValidators(item: FormItem, _map: ValidatorMap = {}):
         }
     }
 
-    if (item.type === "text" && (item.min !== undefined || item.max !== undefined)) {
+    if (item.type === "text" && (item.minLength !== undefined || item.maxLength !== undefined)) {
         const hasLengthRule = out.some((entry) => entry.type === "length")
         if (!hasLengthRule) {
             out.push({
                 slug: "length",
                 type: "length",
-                min: item.min,
-                max: item.max,
+                min: item.minLength,
+                max: item.maxLength,
             })
         }
     }
@@ -179,10 +179,50 @@ export function validateScalarValue(
     return undefined
 }
 
-/** Clamp a text value to the field's optional `max` length. */
+/** Effective max length from the field prop or maxLength/length rules. */
+export function fieldMaxLength(item: TextFieldSchema): number | undefined {
+    if (item.maxLength !== undefined) return item.maxLength
+    let max: number | undefined
+    for (const rule of item.rules ?? []) {
+        if (rule.type === "maxLength") {
+            max = max === undefined ? rule.value : Math.min(max, rule.value)
+        } else if (rule.type === "length" && rule.max !== undefined) {
+            max = max === undefined ? rule.max : Math.min(max, rule.max)
+        }
+    }
+    return max
+}
+
+/** Effective min length from the field prop or minLength/length rules. */
+export function fieldMinLength(item: TextFieldSchema): number | undefined {
+    if (item.minLength !== undefined) return item.minLength
+    let min: number | undefined
+    for (const rule of item.rules ?? []) {
+        if (rule.type === "minLength") {
+            min = min === undefined ? rule.value : Math.max(min, rule.value)
+        } else if (rule.type === "length" && rule.min !== undefined) {
+            min = min === undefined ? rule.min : Math.max(min, rule.min)
+        }
+    }
+    return min
+}
+
+/** Keep only characters allowed for the input type, then clamp to maxLength. */
+export function sanitizeTextInput(item: TextFieldSchema, value: string): string {
+    let next = value
+    if (item.inputType === "tel" || item.inputType === "number") {
+        next = next.replace(/\D+/g, "")
+    }
+    const max = fieldMaxLength(item)
+    if (max !== undefined && next.length > max) {
+        next = next.slice(0, max)
+    }
+    return next
+}
+
+/** @deprecated Use sanitizeTextInput */
 export function clampTextValue(item: TextFieldSchema, value: string): string {
-    if (item.max === undefined || value.length <= item.max) return value
-    return value.slice(0, item.max)
+    return sanitizeTextInput(item, value)
 }
 
 export {DIGITS, EMAIL, JALALI}
