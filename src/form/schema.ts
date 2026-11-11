@@ -272,6 +272,8 @@ export interface FormTexts {
 export interface FormSchema {
     id: string
     table: string
+    /** Base URL for the form API (e.g. "/api" or "https://example.com/api"). Overridden by the MultiStepForm `apiBase` prop when that prop is set. */
+    apiBase?: string
     dir?: Direction
     texts?: Partial<FormTexts>
     validators?: FormValidator[]

@@ -40,8 +40,10 @@ export function MultiStepForm(props: MultiStepFormProps) {
     )
 }
 
-function FormShell({schema, schemaUrl, apiBase = "/api", onFinished}: MultiStepFormProps) {
+function FormShell({schema, schemaUrl, apiBase: apiBaseProp, onFinished}: MultiStepFormProps) {
     const {enqueueSnackbar} = useSnackbar()
+    const [loaded, setLoaded] = useState<FormSchema | null>(schema ?? null)
+    const apiBase = apiBaseProp ?? loaded?.apiBase ?? "/api"
     const storeRef = useRef<FormStore | null>(null)
     if (!storeRef.current || storeRef.current.apiBase !== apiBase) {
         storeRef.current = new FormStore(apiBase)
@@ -49,7 +51,6 @@ function FormShell({schema, schemaUrl, apiBase = "/api", onFinished}: MultiStepF
     const store = storeRef.current
     useFormVersion(store)
 
-    const [loaded, setLoaded] = useState<FormSchema | null>(schema ?? null)
     const [error, setError] = useState<string>()
     const [ready, setReady] = useState(false)
     const [busy, setBusy] = useState(false)
