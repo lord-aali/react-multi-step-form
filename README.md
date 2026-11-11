@@ -1,6 +1,6 @@
 # react-multi-step-form
 
-Schema-driven multi-step form for React, Material UI, and Vite. It supports RTL and LTR, per-field direction, agreements, live typography, alert dialogs, bottom sheets, a Jalali date wheel, and an in-app camera. Draft values are kept in an encrypted anonymous server session. They are not written to `localStorage`.
+Schema-driven multi-step form for React, Material UI, and Vite. It supports RTL and LTR, per-field direction, agreements, live typography, alert dialogs, bottom sheets, a Jalali date wheel, and an in-app camera. Draft values are kept in an encrypted anonymous server session.
 
 ```bash
 npm install github:lord-aali/react-multi-step-form
