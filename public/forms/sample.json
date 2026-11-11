@@ -1,6 +1,5 @@
 {
   "id": "registration",
-  "table": "registration",
   "apiBase": "/api",
   "dir": "rtl",
   "validators": [

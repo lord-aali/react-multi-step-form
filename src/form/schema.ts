@@ -270,8 +270,8 @@ export interface FormTexts {
 }
 
 export interface FormSchema {
+    /** Form id; must match a server table `slug`. Sent to the API as `id`. */
     id: string
-    table: string
     /** Base URL for the form API (e.g. "/api" or "https://example.com/api"). Overridden by the MultiStepForm `apiBase` prop when that prop is set. */
     apiBase?: string
     dir?: Direction

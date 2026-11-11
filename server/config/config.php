@@ -17,7 +17,8 @@ const SESSION_COOKIE = 'msf_session';
 const STORAGE_DIR = __DIR__ . '/../storage';
 
 const TABLES = [
-    'registration' => [
+    [
+        'slug' => 'registration',
         'name' => 'registration_applications',
         'key' => 'public_key',
         'columns' => [

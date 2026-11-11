@@ -26,7 +26,6 @@ import "react-multi-step-form/style.css"
 
 const schema: FormSchema = {
   id: "registration",
-  table: "registration",
   dir: "rtl",
   validators: [
     { slug: "required", type: "required" },
@@ -128,7 +127,6 @@ Define validators once on the schema, then attach their slugs to fields. A field
 ```ts
 const schema: FormSchema = {
   id: "driver",
-  table: "driver",
   validators: [
     { slug: "required", type: "required", message: "الزامی است." },
     { slug: "numeric", type: "numeric", message: "فقط رقم." },
@@ -247,9 +245,9 @@ The Vite dev server proxies `/api` to that process. Edit `server/config/config.p
 - `DRAFT_KEY`, 64 hex characters, used only on the server
 - `TABLES`
 
-Each table entry has a slug, a physical table name, a public key column (beside the numeric `id`), and columns. Column types are `string`, `text`, `int`, `float`, `bool`, `date`, `datetime`, `json`, and `file`. On boot the server creates a missing database, creates missing tables, and adds missing columns. It does not drop columns.
+Each table entry has a required `slug`, a physical table name, a public key column (beside the numeric `id`), and columns. Column types are `string`, `text`, `int`, `float`, `bool`, `date`, `datetime`, `json`, and `file`. On boot the server creates a missing database, creates missing tables, and adds missing columns. It does not drop columns.
 
-The sample slug is `registration`. The form's `table` must match a slug. On the first successful step the form inserts a row and keeps the returned key inside the encrypted draft. Later steps update that row. The browser does not store the key.
+The sample slug is `registration`. The form's `id` must match that slug and is sent to the API as `id`. On the first successful step the form inserts a row and keeps the returned key inside the encrypted draft. Later steps update that row. The browser does not store the key.
 
 | Request | Who can call it |
 | --- | --- |
@@ -257,7 +255,7 @@ The sample slug is `registration`. The form's `table` must match a slug. On the 
 | `GET /api/session` | The cookie holder. Returns the decrypted draft. |
 | `PUT /api/session` | The cookie holder. Replaces the draft. The body is sealed with `sodium_crypto_secretbox` before it is stored. |
 | `DELETE /api/session` | The cookie holder. |
-| `POST /api/datasets` | Anyone. Body `{ "table", "values" }`. No row key. Returns `{ "id", "key" }`. |
+| `POST /api/datasets` | Anyone. Body `{ "id", "values" }` where `id` is the table slug. No row key. Returns `{ "id", "key" }`. |
 | `PUT /api/datasets/{slug}/{key}` | Anyone who knows the key. |
 | `GET /api/datasets/{slug}/{key}` | Anyone who knows the key. No API key. |
 | `GET /api/datasets/{slug}` | Requires the `X-Api-Key` header. |

@@ -10,7 +10,7 @@ export interface FileState {
 }
 
 export interface DraftPayload {
-    table: string
+    id: string
     page: number
     rowKey?: string
     rowId?: number
@@ -120,7 +120,7 @@ export class FormStore {
                 files[name] = {
                     onServer: true,
                     dirty: false,
-                    previewUrl: `${this.apiBase}/datasets/${encodeURIComponent(draft.table)}/${draft.rowKey}/files/${encodeURIComponent(name)}`,
+                    previewUrl: `${this.apiBase}/datasets/${encodeURIComponent(draft.id)}/${draft.rowKey}/files/${encodeURIComponent(name)}`,
                 }
             }
         }
@@ -130,13 +130,13 @@ export class FormStore {
         this.bump()
     }
 
-    draft(table: string): DraftPayload {
+    draft(id: string): DraftPayload {
         const files: Record<string, boolean> = {}
         for (const [name, file] of Object.entries(this.files)) {
             if (file.onServer || file.blob) files[name] = true
         }
         return {
-            table,
+            id,
             page: this.page,
             rowKey: this.rowKey,
             rowId: this.rowId,

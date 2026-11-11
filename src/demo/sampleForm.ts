@@ -3,7 +3,6 @@ import {DIGIT_CHARS, PERSIAN_CHARS} from "../form/charValidation"
 
 export const sampleForm: FormSchema = {
     id: "registration",
-    table: "registration",
     apiBase: "/api",
     dir: "rtl",
     validators: [

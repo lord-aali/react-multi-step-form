@@ -110,7 +110,7 @@ function FormShell({schema, schemaUrl, apiBase: apiBaseProp, onFinished}: MultiS
             try {
                 await ensureSession(apiBase)
                 const draft = await loadDraft(apiBase)
-                if (!cancel && draft.status === "ok" && draft.data && draft.data.table === loaded.table) {
+                if (!cancel && draft.status === "ok" && draft.data && draft.data.id === loaded.id) {
                     store.hydrate(draft.data)
                 }
             } catch {
@@ -126,7 +126,7 @@ function FormShell({schema, schemaUrl, apiBase: apiBaseProp, onFinished}: MultiS
     useEffect(() => {
         if (!ready || !loaded) return
         const timer = window.setTimeout(() => {
-            void saveDraft(apiBase, store.draft(loaded.table)).catch(() => undefined)
+            void saveDraft(apiBase, store.draft(loaded.id)).catch(() => undefined)
         }, 400)
         return () => window.clearTimeout(timer)
     }, [ready, loaded, apiBase, store, store.getVersion()])
@@ -156,7 +156,7 @@ function FormShell({schema, schemaUrl, apiBase: apiBaseProp, onFinished}: MultiS
         try {
             let key = store.rowKey
             if (!key) {
-                const created = await insertDataset(apiBase, loaded.table, values)
+                const created = await insertDataset(apiBase, loaded.id, values)
                 if (created.status !== "ok" || !created.data?.key) {
                     if (created.errors) store.setServerErrors(created.errors)
                     pushSnackbar(enqueueSnackbar, "error", created.message || texts.fixErrors)
@@ -165,7 +165,7 @@ function FormShell({schema, schemaUrl, apiBase: apiBaseProp, onFinished}: MultiS
                 key = created.data.key
                 store.setRow(key, created.data.id)
             } else {
-                const updated = await updateDataset(apiBase, loaded.table, key, values)
+                const updated = await updateDataset(apiBase, loaded.id, key, values)
                 if (updated.status !== "ok") {
                     if (updated.errors) store.setServerErrors(updated.errors)
                     pushSnackbar(enqueueSnackbar, "error", updated.message || texts.fixErrors)
@@ -180,7 +180,7 @@ function FormShell({schema, schemaUrl, apiBase: apiBaseProp, onFinished}: MultiS
             for (const name of active) {
                 const file = store.files[name]
                 if (!file?.blob || !key) continue
-                const uploaded = await uploadFile(apiBase, loaded.table, key, name, file.blob)
+                const uploaded = await uploadFile(apiBase, loaded.id, key, name, file.blob)
                 if (uploaded.status !== "ok") {
                     if (uploaded.errors) store.setServerErrors(uploaded.errors)
                     pushSnackbar(enqueueSnackbar, "error", uploaded.message || texts.fixErrors)
@@ -188,7 +188,7 @@ function FormShell({schema, schemaUrl, apiBase: apiBaseProp, onFinished}: MultiS
                 }
                 store.setFile(name, {...file, dirty: false, onServer: true})
             }
-            await saveDraft(apiBase, store.draft(loaded.table))
+            await saveDraft(apiBase, store.draft(loaded.id))
             return "ok" as const
         } catch {
             return "offline" as const

@@ -33,7 +33,8 @@ final class Schema
             ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci'
         );
 
-        foreach (TABLES as $slug => $table) {
+        foreach (TABLES as $table) {
+            $slug = self::slugOf($table);
             Database::ident($slug);
             $physical = Database::ident($table['name']);
             $key = Database::ident($table['key']);
@@ -66,9 +67,20 @@ final class Schema
 
     public static function table(string $slug): array
     {
-        if (!isset(TABLES[$slug])) {
-            Response::send('failed', null, 'Unknown table', null, 404);
+        foreach (TABLES as $table) {
+            if (self::slugOf($table) === $slug) {
+                return $table;
+            }
         }
-        return TABLES[$slug];
+        Response::send('failed', null, 'Unknown table', null, 404);
+    }
+
+    public static function slugOf(array $table): string
+    {
+        $slug = $table['slug'] ?? null;
+        if (!is_string($slug) || $slug === '') {
+            throw new InvalidArgumentException('Each TABLES entry must define a non-empty slug');
+        }
+        return $slug;
     }
 }

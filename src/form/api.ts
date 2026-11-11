@@ -52,21 +52,21 @@ export function saveDraft(base: string, draft: DraftPayload) {
     return api(base, "/session", {method: "PUT", body: JSON.stringify(draft)})
 }
 
-export function insertDataset(base: string, table: string, values: Record<string, unknown>) {
+export function insertDataset(base: string, id: string, values: Record<string, unknown>) {
     return api<{ id: number; key: string }>(base, "/datasets", {
         method: "POST",
-        body: JSON.stringify({table, values}),
+        body: JSON.stringify({id, values}),
     })
 }
 
-export function updateDataset(base: string, table: string, key: string, values: Record<string, unknown>) {
-    return api(base, `/datasets/${encodeURIComponent(table)}/${key}`, {
+export function updateDataset(base: string, id: string, key: string, values: Record<string, unknown>) {
+    return api(base, `/datasets/${encodeURIComponent(id)}/${key}`, {
         method: "PUT",
         body: JSON.stringify({values}),
     })
 }
 
-export function uploadFile(base: string, table: string, key: string, column: string, blob: Blob) {
+export function uploadFile(base: string, id: string, key: string, column: string, blob: Blob) {
     const body = new FormData()
     const type = blob.type || "application/octet-stream"
     const ext = type.includes("webm") ? "webm"
@@ -77,7 +77,7 @@ export function uploadFile(base: string, table: string, key: string, column: str
                         : "bin"
     const file = blob instanceof File ? blob : new File([blob], `${column}.${ext}`, {type})
     body.set("file", file)
-    return api(base, `/datasets/${encodeURIComponent(table)}/${key}/files/${encodeURIComponent(column)}`, {
+    return api(base, `/datasets/${encodeURIComponent(id)}/${key}/files/${encodeURIComponent(column)}`, {
         method: "POST",
         body,
     })
