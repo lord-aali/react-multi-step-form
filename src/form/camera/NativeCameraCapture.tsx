@@ -36,7 +36,6 @@ const NativeCameraCapture = forwardRef<NativeCameraCaptureHandle, NativeCameraCa
         useImperativeHandle(ref, () => ({open}), [])
 
         const handleFileChange = (ev: ChangeEvent<HTMLInputElement>) => {
-            // Capture the File first — FileList is live and clears when value is reset.
             const file = ev.target.files?.[0]
             ev.target.value = ""
             if (file) {

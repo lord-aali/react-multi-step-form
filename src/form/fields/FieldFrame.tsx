@@ -29,7 +29,10 @@ export default function FieldFrame({
             data-type={item.type}
             data-field={item.name}
             data-dir={fieldDir}
-            sx={{mb: item.type === "typography" ? 1.5 : 0}}
+            sx={{
+                width: "100%",
+                mb: item.type === "typography" ? 1.5 : 3,
+            }}
         >
             {children}
         </Box>

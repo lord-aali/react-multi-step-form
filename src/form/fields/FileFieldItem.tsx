@@ -1,7 +1,6 @@
 import {type ChangeEvent, type SyntheticEvent, useRef, useState} from "react"
 import {
     Box,
-    FormHelperText,
     IconButton,
     List,
     ListItemButton,
@@ -21,6 +20,8 @@ import {useFormVersion} from "../store"
 import BottomSheet from "../ui/BottomSheet"
 import CaptureCamera from "../camera/CaptureCamera"
 import NativeCameraCapture, {type NativeCameraCaptureHandle} from "../camera/NativeCameraCapture"
+import RichContent from "../ui/RichContent"
+import FieldHelper from "./FieldHelper"
 
 const IMAGE_EXT = [".jpg", ".jpeg", ".heic"]
 const VIDEO_EXT = [".mp4", ".mov", ".webm"]
@@ -105,13 +106,18 @@ export default function FileFieldItem({item}: { item: FileFieldSchema }) {
     }
 
     const hints = {
-        capture: {top: item.captureHintTop, bottom: item.captureHintBottom},
-        confirm: {top: item.confirmHintTop, bottom: item.confirmHintBottom},
+        capture: {
+            top: item.captureHintTop ? <RichContent value={item.captureHintTop}/> : null,
+            bottom: item.captureHintBottom ? <RichContent value={item.captureHintBottom}/> : null,
+        },
+        confirm: {
+            top: item.confirmHintTop ? <RichContent value={item.confirmHintTop}/> : null,
+            bottom: item.confirmHintBottom ? <RichContent value={item.confirmHintBottom}/> : null,
+        },
     }
 
     return (
-        <Box className="msf-file" data-msf-part="file" sx={{mt: "12px"}}>
-            {notice ? <FormHelperText className="msf-helper" error>{notice}</FormHelperText> : null}
+        <Box className="msf-file" data-msf-part="file" sx={{mt: "12px", mb: 0, width: "100%"}}>
             {cameraMode === "native" ? (
                 <NativeCameraCapture
                     ref={nativeRef}
@@ -166,6 +172,8 @@ export default function FileFieldItem({item}: { item: FileFieldSchema }) {
                     if (!preview || !item.isVideo) void openChooser()
                 }}
                 sx={{
+                    width: "100%",
+                    boxSizing: "border-box",
                     p: preview ? 0 : "8px",
                     overflow: preview ? "hidden" : undefined,
                     minHeight: 164,
@@ -188,14 +196,16 @@ export default function FileFieldItem({item}: { item: FileFieldSchema }) {
                 />
                 <Box className="msf-file-placeholder" sx={{
                     display: preview ? "none" : "flex",
+                    width: "100%",
                     flexGrow: 1,
                     p: item.imagePlaceholder ? "8px 0" : "37px 0",
                     flexDirection: "column",
                     justifyContent: "center",
                     alignItems: "center",
+                    "& .custom-placeholder": {maxWidth: 140, mb: "12px"},
                 }}>
                     {item.imagePlaceholder ? (
-                        <Box className="custom-placeholder" component="img" src={item.imagePlaceholder} alt="" sx={{maxWidth: 140, mb: "12px"}}/>
+                        <Box className="custom-placeholder" component="img" src={item.imagePlaceholder} alt="" sx={{width: "100%", maxWidth: 140, mb: "12px"}}/>
                     ) : (
                         <BadgeOutlinedIcon fontSize="large"/>
                     )}
@@ -255,7 +265,7 @@ export default function FileFieldItem({item}: { item: FileFieldSchema }) {
                     )}
                 </Box>
             </Box>
-            {error ? <FormHelperText className="msf-helper" error>{error}</FormHelperText> : null}
+            <FieldHelper error={error || notice}/>
         </Box>
     )
 }

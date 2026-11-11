@@ -1,5 +1,5 @@
 import type {FormSchema} from "../form/schema"
-import {TAPSI_DIGIT_CHARS, TAPSI_PERSIAN_CHARS} from "../form/tapsiValidation"
+import {DIGIT_CHARS, PERSIAN_CHARS} from "../form/charValidation"
 
 export const sampleForm: FormSchema = {
     id: "registration",
@@ -9,8 +9,8 @@ export const sampleForm: FormSchema = {
         {slug: "required", type: "required", message: "این فیلد الزامی است."},
         {slug: "numeric", type: "numeric", message: "فقط رقم انگلیسی مجاز است."},
         {slug: "persian-name", type: "persianName", message: "فقط حروف فارسی مجاز است."},
-        {slug: "persian-chars", type: "chars", chars: TAPSI_PERSIAN_CHARS, message: "فقط حروف فارسی مجاز است."},
-        {slug: "digit-chars", type: "chars", chars: TAPSI_DIGIT_CHARS, message: "فقط رقم انگلیسی مجاز است."},
+        {slug: "persian-chars", type: "chars", chars: PERSIAN_CHARS, message: "فقط حروف فارسی مجاز است."},
+        {slug: "digit-chars", type: "chars", chars: DIGIT_CHARS, message: "فقط رقم انگلیسی مجاز است."},
         {slug: "phone-length", type: "length", min: 11, max: 11, message: "شماره باید ۱۱ رقم باشد."},
         {slug: "mobile-ir", type: "pattern", pattern: "^09[0-9]{9}$", message: "شماره باید با ۰۹ شروع شود."},
         {slug: "jalali-date", type: "jalaliDate", message: "تاریخ معتبر نیست."},
@@ -93,9 +93,9 @@ export const sampleForm: FormSchema = {
                     validators: ["required"],
                     errorMessage: "پذیرش قوانین الزامی است.",
                     terms: {
-                        title: "مشاهده قوانین",
-                        presentation: "sheet",
-                        body: "با ادامه ثبت‌نام می‌پذیرید اطلاعات واردشده برای بررسی درخواست استفاده شود و تصویر مدارک واضح و متعلق به خودتان باشد.",
+                        title: "قوانین و شرایط",
+                        presentation: "static",
+                        body: "<p>با ادامه ثبت‌نام می‌پذیرید:</p><ul><li>اطلاعات واردشده برای بررسی درخواست استفاده شود</li><li>تصویر مدارک واضح و متعلق به خودتان باشد</li></ul>",
                     },
                     dialogs: {
                         onToggle: {

@@ -6,7 +6,6 @@ import type {ReactNode} from "react"
 import type {Direction} from "../schema"
 import {themeLtr, themeRtl} from "./theme"
 
-// Only rtlPlugin. Do not add the stylis prefixer: together they crash on ::placeholder.
 const cacheRtl = createCache({
     key: "msfrtl",
     stylisPlugins: [rtlPlugin],

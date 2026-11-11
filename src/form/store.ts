@@ -26,6 +26,7 @@ export class FormStore {
     rowId?: number
     serverErrors: Record<string, string> = {}
     showErrors = false
+    touched: Record<string, true> = {}
     private version = 0
     private listeners = new Set<() => void>()
 
@@ -40,7 +41,7 @@ export class FormStore {
 
     getVersion = () => this.version
 
-    private touch() {
+    private bump() {
         this.version += 1
         this.listeners.forEach((listener) => listener())
     }
@@ -56,7 +57,13 @@ export class FormStore {
             delete next[name]
             this.serverErrors = next
         }
-        this.touch()
+        this.bump()
+    }
+
+    markTouched(name: string) {
+        if (this.touched[name]) return
+        this.touched = {...this.touched, [name]: true}
+        this.bump()
     }
 
     setFile(name: string, file: FileState | undefined) {
@@ -69,35 +76,36 @@ export class FormStore {
             delete errors[name]
             this.serverErrors = errors
         }
-        this.touch()
+        this.bump()
     }
 
     setServerErrors(errors: Record<string, string>) {
         this.serverErrors = errors
         this.showErrors = true
-        this.touch()
+        this.bump()
     }
 
     setShowErrors(show: boolean) {
         this.showErrors = show
-        this.touch()
+        this.bump()
     }
 
     setPage(page: number) {
         this.page = page
         this.showErrors = false
-        this.touch()
+        this.touched = {}
+        this.bump()
     }
 
     setRow(key: string, id?: number) {
         this.rowKey = key
         this.rowId = id
-        this.touch()
+        this.bump()
     }
 
     mergeValues(partial: Record<string, Scalar>) {
         this.values = {...this.values, ...partial}
-        this.touch()
+        this.bump()
     }
 
     hydrate(draft: DraftPayload) {
@@ -118,7 +126,8 @@ export class FormStore {
         }
         this.files = files
         this.showErrors = false
-        this.touch()
+        this.touched = {}
+        this.bump()
     }
 
     draft(table: string): DraftPayload {

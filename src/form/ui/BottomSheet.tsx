@@ -3,7 +3,11 @@ import {Box, Drawer, IconButton, SwipeableDrawer, Typography} from "@mui/materia
 import CloseIcon from "@mui/icons-material/Close"
 
 const paperStyle = {
+    width: "100%",
+    maxWidth: 420,
     maxHeight: "85vh",
+    marginLeft: "auto",
+    marginRight: "auto",
     "&::-webkit-scrollbar": {display: {xs: "block", md: "none"}},
     scrollbarWidth: {xs: "auto", md: "none"},
 }

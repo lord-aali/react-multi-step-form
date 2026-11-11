@@ -16,6 +16,7 @@ import ItemList from "./fields/ItemList"
 import AlertDialog from "./ui/AlertDialog"
 import BottomSheet from "./ui/BottomSheet"
 import LoadingHover from "./ui/LoadingHover"
+import RichContent from "./ui/RichContent"
 import {pushSnackbar} from "./ui/CustomSnackbar"
 import loadingUrl from "./assets/loading.svg?no-inline"
 import timeUrl from "./assets/time.svg?no-inline"
@@ -112,7 +113,6 @@ function FormShell({schema, schemaUrl, apiBase = "/api", onFinished}: MultiStepF
                     store.hydrate(draft.data)
                 }
             } catch {
-                // The form stays usable when the draft API is offline.
             } finally {
                 if (!cancel) setReady(true)
             }
@@ -293,7 +293,9 @@ function FormShell({schema, schemaUrl, apiBase = "/api", onFinished}: MultiStepF
                                         <Typography className="msf-page-title" component="h1" sx={{my: "12px", mb: 1, fontWeight: 600, fontSize: 24}}>{page.title}</Typography>
                                     ) : null}
                                     {page.description ? (
-                                        <Typography className="msf-page-description" sx={{m: 0, fontWeight: 300, fontSize: 16, lineHeight: "24px"}}>{page.description}</Typography>
+                                        <Box className="msf-page-description" sx={{m: 0, fontWeight: 300, fontSize: 16, lineHeight: "24px"}}>
+                                            <RichContent value={page.description} values={store.values}/>
+                                        </Box>
                                     ) : null}
                                 </Box>
                                 <Box className="msf-page-body" data-msf-part="page-body" sx={{px: 2, py: 1.5}}>
@@ -355,7 +357,9 @@ function FormShell({schema, schemaUrl, apiBase = "/api", onFinished}: MultiStepF
                     ) : null}
                     {pending?.spec.presentation === "sheet" ? (
                         <BottomSheet open onClose={() => closePrompt(false)} title={pending.spec.title}>
-                            <Typography className="msf-sheet-message" sx={{mb: 2, whiteSpace: "pre-wrap"}}>{pending.spec.body}</Typography>
+                            <Box className="msf-sheet-message" sx={{mb: 2}}>
+                                <RichContent value={pending.spec.body} values={store.values}/>
+                            </Box>
                             <Stack direction="row" spacing={1}>
                                 <Button className="msf-sheet-cancel" fullWidth variant="text" onClick={() => closePrompt(false)}>{pending.spec.cancelText || texts.cancel}</Button>
                                 <Button className="msf-sheet-confirm" fullWidth variant="contained" onClick={() => closePrompt(true)}>{pending.spec.confirmText || texts.confirm}</Button>

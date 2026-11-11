@@ -27,9 +27,10 @@ export default function TextFieldItem({item}: { item: TextFieldSchema }) {
             type={item.inputType === "number" ? "text" : (item.inputType ?? "text")}
             dir={fieldDir}
             required={required}
+            fullWidth
             error={!!error}
-            helperText={error || " "}
-            FormHelperTextProps={{className: "msf-helper"}}
+            helperText={error || undefined}
+            FormHelperTextProps={{className: "msf-helper", sx: {mt: 0.75}}}
             InputLabelProps={{className: "msf-label"}}
             inputProps={{
                 inputMode: numeric ? "numeric" : undefined,
@@ -37,7 +38,7 @@ export default function TextFieldItem({item}: { item: TextFieldSchema }) {
                 style: {direction: fieldDir},
             }}
             sx={{
-                "& .MuiFormHelperText-root": {minHeight: 20},
+                mb: 0,
                 "& .MuiInputBase-input": {direction: fieldDir, textAlign: "start"},
             }}
             onFocus={async () => {
@@ -48,6 +49,7 @@ export default function TextFieldItem({item}: { item: TextFieldSchema }) {
             }}
             onBlur={() => {
                 asked.current = false
+                store.markTouched(item.name)
             }}
             onChange={(event) => store.set(item.name, event.target.value)}
         />

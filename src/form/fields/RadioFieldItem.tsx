@@ -1,9 +1,10 @@
-import {FormControl, FormControlLabel, FormHelperText, FormLabel, Radio, RadioGroup} from "@mui/material"
+import {FormControl, FormControlLabel, FormLabel, Radio, RadioGroup} from "@mui/material"
 import type {RadioFieldSchema} from "../schema"
 import {useFormContext} from "../context"
 import {itemError} from "../logic"
 import {useFormVersion} from "../store"
 import {isFieldRequired} from "../validators"
+import FieldHelper from "./FieldHelper"
 
 export default function RadioFieldItem({item}: { item: RadioFieldSchema }) {
     const {store, texts, ask, validators} = useFormContext()
@@ -12,7 +13,7 @@ export default function RadioFieldItem({item}: { item: RadioFieldSchema }) {
     const value = String(store.get(item.name) ?? "")
 
     return (
-        <FormControl className="msf-control" component="fieldset" error={!!error} required={isFieldRequired(item, validators)} sx={{mb: 2}}>
+        <FormControl className="msf-control" component="fieldset" fullWidth error={!!error} required={isFieldRequired(item, validators)} sx={{mb: 0}}>
             {item.label ? <FormLabel className="msf-label" sx={{fontWeight: 700, color: "text.primary", mb: 1}}>{item.label}</FormLabel> : null}
             <RadioGroup
                 className="msf-radio-group"
@@ -36,7 +37,7 @@ export default function RadioFieldItem({item}: { item: RadioFieldSchema }) {
                     />
                 ))}
             </RadioGroup>
-            {error ? <FormHelperText className="msf-helper">{error}</FormHelperText> : null}
+            <FieldHelper error={error}/>
         </FormControl>
     )
 }

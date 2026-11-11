@@ -17,10 +17,9 @@ import {
     SMOOTH_TIER_COUNT,
     stopStream,
 } from "./openUserMedia";
-
-/** Minimum REAL delivered fps we accept before stepping the camera size down. */
-const TARGET_DELIVERED_FPS = 22
 import {startCameraVideoRecording, type CameraRecorder} from "./recordCameraVideo";
+
+const TARGET_DELIVERED_FPS = 22
 
 const cornerSx: SxProps<Theme> = {
     position: "absolute",
@@ -76,7 +75,6 @@ interface props {
     onMediaReady: (blob: Blob | undefined, mimeType: string) => void
 }
 
-
 function CaptureCamera({
                            envWidth,
                            lunch,
@@ -97,7 +95,6 @@ function CaptureCamera({
     const recordedVideoRef = useRef<HTMLVideoElement>(null)
     const canvasRef = useRef<HTMLCanvasElement>(null)
     const orientedRecorderRef = useRef<CameraRecorder | null>(null)
-    // Remembers the camera size tier that gave smooth video, per camera facing.
     const tierCacheRef = useRef<Record<string, number>>({})
     const [takenImage, setTakenImage] = useState<string | undefined>(undefined)
     const [takenVideo, setTakenVideo] = useState<string | undefined>(undefined)
@@ -108,7 +105,6 @@ function CaptureCamera({
     const [recordedMimeType, setRecordedMimeType] = useState("video/mp4")
     const [canvasAspectRatio] = useState(constraints?.aspectRatio ? constraints.aspectRatio : "4/3")
     const aspectRatioValue = parseAspectRatio(canvasAspectRatio) ?? 4 / 3
-    // Fit preview inside leftover flex space (container query units).
     const previewFrameSx = {
         aspectRatio: canvasAspectRatio,
         width: `min(100%, calc(100cqh * ${aspectRatioValue}))`,
@@ -153,15 +149,9 @@ function CaptureCamera({
             height: constraints?.height,
             aspectRatio: parseAspectRatio(constraints?.aspectRatio),
             frameRate: 30,
-            // Video: avoid 4K sources (low fps + slow canvas re-framing).
             smoothVideo: !!isVideo,
         }
 
-        /**
-         * Video only: the nominal frame rate is not trustworthy (dim light / USB
-         * bandwidth / heavy modes give 8–15fps while reporting 30). Measure what the
-         * camera really delivers and step down the size until it is smooth.
-         */
         const openProbed = async (): Promise<MediaStream> => {
             const cacheKey = useRearCamera ? "rear" : "front"
             const cachedTier = tierCacheRef.current[cacheKey]
@@ -174,12 +164,10 @@ function CaptureCamera({
                 const candidate = await openUserMedia({...baseOptions, sizeTier: tier})
                 const video = videoRef.current
                 if (!alive || !video) {
-                    // Unmounted or no element to probe with: keep what we have.
                     if (!alive) stopStream(candidate)
                     else tierCacheRef.current[cacheKey] = tier
                     return candidate
                 }
-                // Show it while probing so the user sees the camera immediately.
                 streamRef.current = candidate
                 await bindStreamToVideoElement(video, candidate)
                 const fps = await measureDeliveredFps(video)
@@ -196,7 +184,6 @@ function CaptureCamera({
                 if (!alive) throw new Error("cancelled")
             }
 
-            // Nothing reached the target: reopen the best tier we saw.
             const bestTier = best?.tier ?? SMOOTH_TIER_COUNT - 1
             tierCacheRef.current[cacheKey] = bestTier
             return openUserMedia({...baseOptions, sizeTier: bestTier})
@@ -241,7 +228,6 @@ function CaptureCamera({
         constraints?.aspectRatio,
     ])
 
-
     useEffect(() => {
         if (!confirmState) {
             setTakenImage(undefined)
@@ -256,7 +242,6 @@ function CaptureCamera({
             }
         };
     }, [takenImage]);
-
 
     function takePhoto() {
         const video = videoRef.current
@@ -275,8 +260,6 @@ function CaptureCamera({
             return
         }
 
-        // Front-camera live preview is CSS-mirrored; flip the canvas so the
-        // captured photo (and confirmation) matches what the user saw.
         context.save()
         if (!useRearCamera) {
             context.translate(width, 0)
@@ -311,8 +294,6 @@ function CaptureCamera({
         orientedRecorderRef.current?.stop()
 
         try {
-            // Direct recording of the camera stream (smoothest + sharpest). The front-camera
-            // mirror is applied only visually via CSS in the preview.
             orientedRecorderRef.current = startCameraVideoRecording({
                 cameraStream: stream,
                 video: liveVideo,
@@ -342,10 +323,8 @@ function CaptureCamera({
         }
     }, [stream, stopCamera])
 
-
     const handleStopRecording = useCallback(() => {
         if (!isRecording) return
-        // onStop handler flips confirm state / stops camera.
         orientedRecorderRef.current?.stop()
     }, [isRecording])
 
@@ -493,7 +472,6 @@ function CaptureCamera({
                                          width: "100%",
                                          height: "100%",
                                          objectFit: "cover",
-                                         // Front camera is mirrored visually only (as in the live preview).
                                          transform: useRearCamera ? undefined : "scaleX(-1)",
                                      }}/>
                                 <ButtonBase onClick={function () {

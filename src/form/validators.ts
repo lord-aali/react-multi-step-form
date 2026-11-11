@@ -1,5 +1,5 @@
 import type {FormItem, FormTexts, FormValidator, ValidationRule} from "./schema"
-import {validateNumbers, validatePersianNameField} from "./tapsiValidation"
+import {validateNumbers, validatePersianNameField} from "./charValidation"
 
 const DIGITS = /^[0-9]+$/
 const DECIMAL = /^[0-9]+(\.[0-9]+)?$/
@@ -29,13 +29,6 @@ function messageFor(
         || (empty ? texts.required : texts.invalid)
 }
 
-/**
- * Resolves validator definitions for a field.
- * - Missing or empty `validators` → optional (returns []).
- * - Slugs that are not in the schema list are ignored.
- * - If every slug is missing from the list, the field is optional.
- * - Legacy `rules` / `required` apply only when `validators` is omitted.
- */
 export function resolveFieldValidators(item: FormItem, map: ValidatorMap): FormValidator[] {
     if (item.type === "typography") return []
 

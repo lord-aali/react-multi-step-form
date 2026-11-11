@@ -82,6 +82,14 @@ export function createFormTheme(direction: Direction): Theme {
                     paper: {
                         borderRadius: 16,
                         fontFamily,
+                        width: "100%",
+                        maxWidth: 420,
+                        marginLeft: "auto",
+                        marginRight: "auto",
+                        textAlign: "start",
+                    },
+                    paperWidthFalse: {
+                        maxWidth: 420,
                     },
                 },
             },
@@ -90,7 +98,8 @@ export function createFormTheme(direction: Direction): Theme {
                     paperAnchorBottom: {
                         borderTopLeftRadius: 20,
                         borderTopRightRadius: 20,
-                        maxWidth: 480,
+                        width: "100%",
+                        maxWidth: 420,
                         marginLeft: "auto",
                         marginRight: "auto",
                     },

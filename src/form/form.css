@@ -8,3 +8,51 @@
 .msf-dialog {
     font-family: Vazirmatn-FD, Vazirmatn, sans-serif;
 }
+
+.msf-dialog-paper[dir="rtl"],
+.msf-dialog-paper[dir="rtl"] .msf-dialog-title,
+.msf-dialog-paper[dir="rtl"] .msf-dialog-body,
+.msf-dialog-paper[dir="rtl"] .msf-dialog-message {
+    direction: rtl;
+    text-align: right;
+}
+
+.msf-dialog-paper[dir="ltr"],
+.msf-dialog-paper[dir="ltr"] .msf-dialog-title,
+.msf-dialog-paper[dir="ltr"] .msf-dialog-body,
+.msf-dialog-paper[dir="ltr"] .msf-dialog-message {
+    direction: ltr;
+    text-align: left;
+}
+
+.msf-dialog-paper[dir="rtl"] .msf-dialog-actions {
+    direction: rtl;
+    justify-content: flex-end;
+}
+
+.msf-dialog-paper[dir="ltr"] .msf-dialog-actions {
+    direction: ltr;
+    justify-content: flex-end;
+}
+
+.msf-rich-text-html p {
+    margin: 0 0 0.75em;
+}
+
+.msf-rich-text-html p:last-child {
+    margin-bottom: 0;
+}
+
+.msf-rich-text-html ul,
+.msf-rich-text-html ol {
+    margin: 0.5em 0;
+    padding-inline-start: 1.5em;
+}
+
+.msf-rich-text-html li {
+    margin: 0.25em 0;
+}
+
+.msf-rich-text-html a {
+    color: #0065dc;
+}

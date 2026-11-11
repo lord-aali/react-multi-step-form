@@ -3,24 +3,13 @@ export type OpenUserMediaOptions = {
     audio?: boolean
     width?: number
     height?: number
-    /** Numeric aspect ratio for getUserMedia, e.g. 9/16. */
     aspectRatio?: number
     frameRate?: number
-    /**
-     * Video recording: never request 4K (it makes many cameras drop to a few fps
-     * and makes canvas re-framing very slow). Request 1080p/720p with fps >= 24
-     * and verify the real track frame rate after opening.
-     */
     smoothVideo?: boolean
-    /**
-     * Start of the size ladder in smooth mode (0 = 1080p, 1 = 720p, 2 = 540p,
-     * 3 = 480p, 4 = any). Used to step down when the camera can't deliver real fps.
-     */
     sizeTier?: number
 }
 
 const MIN_SMOOTH_FPS = 24
-/** Reject a stream whose reported fps is clearly below this (some report 0/undefined → accepted). */
 const ACCEPT_SMOOTH_FPS = 22
 
 const SMOOTH_SIZES: Array<{width?: ConstrainULong; height?: ConstrainULong}> = [
@@ -32,12 +21,6 @@ const SMOOTH_SIZES: Array<{width?: ConstrainULong; height?: ConstrainULong}> = [
 ]
 export const SMOOTH_TIER_COUNT = SMOOTH_SIZES.length
 
-/**
- * Measures the frame rate the camera ACTUALLY delivers to a playing <video>
- * (track.getSettings().frameRate is only the nominal/requested value and is
- * often 30 while a dim room or USB bandwidth gives 8–15).
- * Returns null when the browser can't tell.
- */
 export function measureDeliveredFps(
     video: HTMLVideoElement,
     durationMs = 1100,
@@ -65,7 +48,6 @@ export function measureDeliveredFps(
                 try {
                     v.cancelVideoFrameCallback?.(id)
                 } catch {
-                    // ignore
                 }
                 if (!firstAt || lastAt <= firstAt) {
                     resolve(0)
@@ -177,7 +159,6 @@ function sizeHint(options: OpenUserMediaOptions, mode: "asRequested" | "sensorLa
     const aspect = options.aspectRatio
 
     if (mode === "highRes") {
-        // Prefer the highest common sensor modes; canvas will reframe to portrait.
         return {
             width: {ideal: 3840},
             height: {ideal: 2160},
@@ -186,7 +167,6 @@ function sizeHint(options: OpenUserMediaOptions, mode: "asRequested" | "sensorLa
     }
 
     if (mode === "sensorLandscape" && width && height && height > width) {
-        // Portrait intent → ask for landscape sensor mode with the long edge first.
         return {
             width: {ideal: Math.max(width, height)},
             height: {ideal: Math.min(width, height)},
@@ -203,7 +183,6 @@ function sizeHint(options: OpenUserMediaOptions, mode: "asRequested" | "sensorLa
         }
     }
 
-    // Soft: keep some resolution pressure without failing hard.
     if (width || height) {
         const longEdge = Math.max(width || 1280, height || 720)
         return {
@@ -262,7 +241,6 @@ function buildAttempts(
         push({facingMode: facing, ...size}, audio)
     }
 
-    // Last-resort facing-only (still keep audio preference), then bare video.
     if (deviceId) {
         push({deviceId: {exact: deviceId}, frameRate: {ideal: 30}}, audio)
         push({deviceId: {exact: deviceId}}, false)
@@ -276,7 +254,6 @@ function buildAttempts(
     return attempts
 }
 
-/** One independent getUserMedia call. No shared session. */
 export async function openUserMedia(options: OpenUserMediaOptions = {}): Promise<MediaStream> {
     if (!navigator.mediaDevices?.getUserMedia) {
         throw new Error("getUserMedia is not available")
@@ -287,7 +264,6 @@ export async function openUserMedia(options: OpenUserMediaOptions = {}): Promise
     const generalAttempts = buildAttempts(facing, deviceId, !!options.audio, options)
     const smooth = !!options.smoothVideo
     const tier = options.sizeTier ?? 0
-    // When stepping down a tier, don't let the general fallbacks jump back to big sizes.
     const smoothFallbacks = tier > 0
         ? generalAttempts.filter((c) => c.video === true)
         : generalAttempts.filter(isSafeSmoothFallback)
@@ -296,7 +272,6 @@ export async function openUserMedia(options: OpenUserMediaOptions = {}): Promise
         : generalAttempts
 
     let lastError: unknown
-    // Best stream seen so far when nothing reaches the target fps.
     let fallback: {stream: MediaStream; fps: number} | null = null
 
     for (const constraints of attempts) {
@@ -308,7 +283,6 @@ export async function openUserMedia(options: OpenUserMediaOptions = {}): Promise
 
                 const settings = stream.getVideoTracks()[0]?.getSettings?.()
                 const reportedFps = settings?.frameRate
-                // Unknown fps → trust it. Known and too low → try the next (lighter) mode.
                 if (reportedFps === undefined || reportedFps >= ACCEPT_SMOOTH_FPS) {
                     if (fallback) stopStream(fallback.stream)
                     return stream
@@ -329,7 +303,6 @@ export async function openUserMedia(options: OpenUserMediaOptions = {}): Promise
     throw lastError ?? new Error("Unable to open camera")
 }
 
-/** In smooth mode only allow general fallbacks that don't request 4K. */
 function isSafeSmoothFallback(constraints: MediaStreamConstraints): boolean {
     const video = constraints.video
     if (video === true || video === undefined || video === false) return true

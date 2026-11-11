@@ -39,9 +39,10 @@ export default function DateFieldItem({item}: { item: DateFieldSchema }) {
                 placeholder={item.placeholder}
                 value={value}
                 required={isFieldRequired(item, validators)}
+                fullWidth
                 error={!!error}
-                helperText={error || " "}
-                FormHelperTextProps={{className: "msf-helper"}}
+                helperText={error || undefined}
+                FormHelperTextProps={{className: "msf-helper", sx: {mt: 0.75}}}
                 InputLabelProps={{className: "msf-label"}}
                 InputProps={{
                     readOnly: true,
@@ -49,7 +50,7 @@ export default function DateFieldItem({item}: { item: DateFieldSchema }) {
                 }}
                 inputProps={{style: {cursor: "pointer", caretColor: "transparent"}}}
                 onClick={() => void openSheet()}
-                sx={{mb: 1, "& .MuiInputBase-root": {cursor: "pointer"}}}
+                sx={{mb: 0, "& .MuiInputBase-root": {cursor: "pointer"}}}
             />
             <BottomSheet open={open} onClose={() => setOpen(false)} title={item.dialogTitle || item.title} persistent>
                 <DatePicker2

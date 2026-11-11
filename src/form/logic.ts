@@ -121,8 +121,16 @@ export function itemError(
     if (item.type === "typography" || !item.name) return undefined
     const server = store.serverErrors[item.name]
     if (server) return server
-    if (!store.showErrors) return undefined
-    return validateItem(item, store, texts, validators)
+
+    const error = validateItem(item, store, texts, validators)
+    if (!error) return undefined
+    if (store.showErrors) return error
+    if (item.name && store.touched[item.name]) return error
+    if (item.type === "text") {
+        const value = String(store.get(item.name) ?? "")
+        if (value.length > 0) return error
+    }
+    return undefined
 }
 
 export function validateItem(

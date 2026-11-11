@@ -6,12 +6,3 @@ server/storage/*
 *.log
 *.bak
 .DS_Store
-
-# Local TapsiLandings driver form test (not published)
-src/demo/tapsiDriverForm.ts
-src/demo/tapsiValidators.ts
-public/forms/tapsi-driver.json
-public/images/tapsi-driver-man-register.png
-public/images/tapsi-driver-woman-register.png
-public/images/icons/car_*.png
-public/images/icons/dl_receipt.png

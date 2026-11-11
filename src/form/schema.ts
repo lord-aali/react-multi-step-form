@@ -1,3 +1,7 @@
+import type {ReactNode} from "react"
+
+export type RichText = string | ReactNode
+
 export type Direction = "rtl" | "ltr"
 
 export type CompareOp = "eq" | "neq" | "in" | "notIn" | "empty" | "notEmpty" | "gt" | "lt"
@@ -11,7 +15,7 @@ export interface ShowWhen {
 export interface DialogSpec {
     presentation: "alert" | "sheet"
     title?: string
-    body: string
+    body: RichText
     confirmText?: string
     cancelText?: string
 }
@@ -30,18 +34,11 @@ export interface FieldBase {
     visibleWhen?: ShowWhen | ShowWhen[]
     match?: "all" | "any"
     dialogs?: FieldDialogs
-    /**
-     * Slugs from `FormSchema.validators`. A field with no validators (missing or `[]`)
-     * is optional. A field with one or more slugs is required and must pass each validator.
-     */
     validators?: string[]
-    /** Shown when the field is empty / required. */
     errorMessage?: string
-    /** Per-validator message overrides, keyed by slug. */
     errorMessages?: Record<string, string>
 }
 
-/** @deprecated Prefer schema `validators` + field `validators` slugs. */
 export type ValidationRule =
     | { type: "required"; message?: string }
     | { type: "persianName"; message?: string }
@@ -53,7 +50,6 @@ export type ValidationRule =
 
 export type FormValidator =
     | {
-        /** Marks a field required. Format checks are separate slugs. */
         slug: string
         type: "required"
         message?: string
@@ -61,17 +57,12 @@ export type FormValidator =
     | {
         slug: string
         type: "numeric"
-        /** Allow a single decimal point. Default false. */
         allowDecimal?: boolean
         message?: string
     }
     | {
         slug: string
         type: "chars"
-        /**
-         * Allowed characters, e.g. `"0123456789"` or Persian letters.
-         * Every character in the value must appear in this string.
-         */
         chars: string
         message?: string
     }
@@ -117,9 +108,7 @@ export interface TextFieldSchema extends FieldBase {
     label?: string
     placeholder?: string
     inputType?: "text" | "tel" | "email" | "number"
-    /** @deprecated Use `validators` slugs. */
     required?: boolean
-    /** @deprecated Use schema `validators` + field `validators` slugs. */
     rules?: ValidationRule[]
     defaultValue?: string
 }
@@ -134,7 +123,6 @@ export interface RadioFieldSchema extends FieldBase {
     type: "radio"
     name: string
     label?: string
-    /** @deprecated Use `validators` slugs. */
     required?: boolean
     options: RadioOption[]
     defaultValue?: string
@@ -151,7 +139,6 @@ export interface StageFieldSchema extends FieldBase {
     type: "stage"
     name: string
     label?: string
-    /** @deprecated Use `validators` slugs. */
     required?: boolean
     options: StageOption[]
     defaultValue?: string
@@ -167,7 +154,6 @@ export interface SelectFieldSchema extends FieldBase {
     type: "select"
     name: string
     title: string
-    /** @deprecated Use `validators` slugs. */
     required?: boolean
     items: SelectItem[]
     placeholder?: string
@@ -180,7 +166,6 @@ export interface DateFieldSchema extends FieldBase {
     title: string
     dialogTitle?: string
     placeholder?: string
-    /** @deprecated Use `validators` slugs. */
     required?: boolean
     yearRange?: { min?: number; max?: number }
     formatMonthPreview?: "string" | "numeric"
@@ -196,7 +181,6 @@ export interface FileFieldSchema extends FieldBase {
     isVideo?: boolean
     sources?: Array<"camera" | "gallery">
     maxFileSize?: number
-    /** @deprecated Use `validators` slugs. */
     required?: boolean
     rejectNameIncludes?: string[]
     useRear?: boolean
@@ -204,29 +188,29 @@ export interface FileFieldSchema extends FieldBase {
     aspectRatio?: string
     width?: number
     height?: number
-    captureHintTop?: string
-    captureHintBottom?: string
-    confirmHintTop?: string
-    confirmHintBottom?: string
+    captureHintTop?: RichText
+    captureHintBottom?: RichText
+    confirmHintTop?: RichText
+    confirmHintBottom?: RichText
 }
 
 export interface AgreementFieldSchema extends FieldBase {
     type: "agreement"
     name: string
     label: string
-    /** @deprecated Use `validators` slugs. */
     required?: boolean
     terms?: {
         title: string
-        body: string
-        presentation?: "alert" | "sheet"
+        body: RichText
+        presentation?: "static" | "alert" | "sheet"
     }
 }
+
 
 export interface TypographySchema extends FieldBase {
     type: "typography"
     variant: "h1" | "h2" | "h3" | "h4" | "h5" | "h6" | "p" | "span"
-    text: string
+    text: RichText
     color?: string
     align?: "inherit" | "left" | "center" | "right" | "justify"
 }
@@ -244,7 +228,7 @@ export type FormItem =
 export interface FormPage {
     id: string
     title?: string
-    description?: string
+    description?: RichText
     nextLabel?: string
     prevLabel?: string
     skipWhen?: ShowWhen | ShowWhen[]
@@ -290,7 +274,6 @@ export interface FormSchema {
     table: string
     dir?: Direction
     texts?: Partial<FormTexts>
-    /** Named validators referenced by field `validators` slugs. */
     validators?: FormValidator[]
     pages: FormPage[]
 }

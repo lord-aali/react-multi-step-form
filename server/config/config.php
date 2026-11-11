@@ -10,7 +10,6 @@ const DB_CHARSET = 'utf8mb4';
 
 const API_KEY = 'dev-api-key-change-me';
 
-// 32-byte key, hex encoded. Change this before sharing a deployment.
 const DRAFT_KEY = '0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef';
 
 const SESSION_TTL = 604800;

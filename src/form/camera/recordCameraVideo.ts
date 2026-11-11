@@ -1,7 +1,5 @@
 export type CameraRecordOptions = {
-    /** Camera stream (video + audio). Recorded as-is — no canvas, no re-encode of pixels in JS. */
     cameraStream: MediaStream
-    /** Live preview element; only used to resume it if the browser pauses it. */
     video?: HTMLVideoElement | null
     onStop: (blob: Blob, mimeType: string) => void
     onError?: (error: unknown) => void
@@ -15,11 +13,6 @@ function clamp(n: number, min: number, max: number): number {
     return Math.min(max, Math.max(min, n))
 }
 
-/**
- * Bitrate from the camera's real resolution/fps. The browser default (~2.5 Mbps) is what
- * makes direct recordings look soft; this gives roughly 8 Mbps at 1080p30 and ~4 Mbps
- * at 720p30, which hardware encoders handle comfortably.
- */
 function bitrateFor(stream: MediaStream): number {
     const settings = stream.getVideoTracks()[0]?.getSettings?.() ?? {}
     const width = settings.width || 1280
@@ -29,8 +22,6 @@ function bitrateFor(stream: MediaStream): number {
 }
 
 function pickRecorderOptions(bitrate: number): MediaRecorderOptions {
-    // H.264 first: hardware-encoded on virtually every phone, and the most quality per bit.
-    // High profile is tried before Baseline; unsupported entries are skipped.
     const preferredMimeTypes = [
         "video/mp4;codecs=avc1.640028,mp4a.40.2",
         "video/mp4;codecs=avc1.4D401F,mp4a.40.2",
@@ -49,11 +40,6 @@ function pickRecorderOptions(bitrate: number): MediaRecorderOptions {
     return {videoBitsPerSecond: bitrate, audioBitsPerSecond: 128_000}
 }
 
-/**
- * Records the camera stream directly with MediaRecorder (the original, smoothest method:
- * the browser feeds camera frames straight to the encoder). Front-camera mirroring is
- * only applied visually in the UI via CSS, so the saved file is not mirrored.
- */
 export function startCameraVideoRecording(options: CameraRecordOptions): CameraRecorder {
     const {cameraStream, video, onStop, onError} = options
 
@@ -87,7 +73,6 @@ export function startCameraVideoRecording(options: CameraRecordOptions): CameraR
         return {stop: () => undefined}
     }
 
-    // Some browsers pause the muted preview element (power saving / focus loss).
     watchdogId = window.setInterval(() => {
         if (video && video.paused && cameraStream.active) {
             void video.play().catch(() => undefined)
@@ -106,7 +91,6 @@ export function startCameraVideoRecording(options: CameraRecordOptions): CameraR
                 try {
                     recorder.requestData?.()
                 } catch {
-                    // ignore
                 }
                 recorder.stop()
             } else {

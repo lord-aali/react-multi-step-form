@@ -1,5 +1,5 @@
 import {useState} from "react"
-import {FormHelperText, List, ListItemButton, TextField} from "@mui/material"
+import {Box, List, ListItemButton, TextField} from "@mui/material"
 import KeyboardArrowDownIcon from "@mui/icons-material/KeyboardArrowDown"
 import type {SelectFieldSchema} from "../schema"
 import {useFormContext} from "../context"
@@ -26,15 +26,15 @@ export default function SelectFieldItem({item}: { item: SelectFieldSchema }) {
     }
 
     return (
-        <div className="msf-select" data-msf-part="select">
+        <Box className="msf-select" data-msf-part="select" sx={{width: "100%"}}>
             <TextField
                 className="msf-control msf-select-trigger"
                 label={item.title}
                 value={value || (item.placeholder ?? texts.selectPlaceholder)}
                 required={isFieldRequired(item, validators)}
                 error={!!error}
-                helperText={error || " "}
-                FormHelperTextProps={{className: "msf-helper"}}
+                helperText={error || undefined}
+                FormHelperTextProps={{className: "msf-helper", sx: {mt: 0.75}}}
                 InputLabelProps={{className: "msf-label"}}
                 InputProps={{
                     readOnly: true,
@@ -42,10 +42,14 @@ export default function SelectFieldItem({item}: { item: SelectFieldSchema }) {
                 }}
                 inputProps={{style: {cursor: "pointer", caretColor: "transparent"}}}
                 onClick={() => void openSheet()}
-                sx={{mb: 1, "& .MuiInputBase-root": {cursor: "pointer"}}}
+                fullWidth
+                sx={{mb: 0, "& .MuiInputBase-root": {cursor: "pointer"}}}
             />
-            {selected?.items ? <ItemList items={selected.items}/> : null}
-            {!error ? null : <FormHelperText className="msf-helper" error sx={{display: "none"}}>{error}</FormHelperText>}
+            {selected?.items ? (
+                <Box className="msf-select-children" data-msf-part="select-children" sx={{mt: 3, width: "100%"}}>
+                    <ItemList items={selected.items}/>
+                </Box>
+            ) : null}
             <BottomSheet open={open} onClose={() => setOpen(false)} title={item.title}>
                 <List className="msf-sheet-list" disablePadding>
                     {item.items.map((entry) => {
@@ -67,6 +71,6 @@ export default function SelectFieldItem({item}: { item: SelectFieldSchema }) {
                     })}
                 </List>
             </BottomSheet>
-        </div>
+        </Box>
     )
 }

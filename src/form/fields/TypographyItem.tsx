@@ -1,14 +1,17 @@
 import {Typography} from "@mui/material"
 import type {TypographySchema} from "../schema"
 import {useFormContext} from "../context"
-import {interpolate} from "../logic"
+import {looksLikeHtml} from "../richText"
 import {useFormVersion} from "../store"
+import RichContent from "../ui/RichContent"
 
 export default function TypographyItem({item}: { item: TypographySchema }) {
     const {store} = useFormContext()
     useFormVersion(store)
-    const component = item.variant === "p" || item.variant === "span" ? item.variant : item.variant
+    const html = typeof item.text === "string" && looksLikeHtml(item.text)
+    const component = html ? "div" : (item.variant === "p" || item.variant === "span" ? item.variant : item.variant)
     const variant = item.variant === "p" ? "body1" : item.variant === "span" ? "body2" : item.variant
+
     return (
         <Typography
             className={`msf-typography msf-typography-${item.variant}`}
@@ -16,9 +19,9 @@ export default function TypographyItem({item}: { item: TypographySchema }) {
             component={component}
             variant={variant}
             align={item.align}
-            sx={{color: item.color || "text.primary", whiteSpace: "pre-wrap"}}
+            sx={{color: item.color || "text.primary", ...(html ? {} : {whiteSpace: "pre-wrap"})}}
         >
-            {interpolate(item.text, store.values)}
+            <RichContent value={item.text} values={store.values}/>
         </Typography>
     )
 }

@@ -87,8 +87,30 @@ Field `type` values:
 | `select` | Read-only `TextField` that opens a bottom sheet. An item may contain nested `items`. |
 | `date` | Jalali year, month, and day wheels in a bottom sheet. The stored value is `year/month/day`. |
 | `file` | Photo or video tile. `camera` is `advanced` (default) or `native`. |
-| `agreement` | MUI `Checkbox`. Optional `terms` open as an `alert` or a `sheet`. |
+| `agreement` | MUI `Checkbox`. Optional `terms` can show `static` above the checkbox, or open as an `alert` / `sheet`. |
 | `typography` | `h1` through `h6`, `p`, or `span`. `color` falls back to the theme. `{{fieldName}}` is replaced with the live value. |
+| rich copy | Page `description`, typography `text`, dialog/agreement `body`, and file camera hints accept plain text, HTML strings, or (TS only) `ReactNode`. |
+
+### Rich text (HTML and ReactNode)
+
+JSON and TypeScript string fields may include HTML such as `<p>`, `<br>`, `<ul>`, `<ol>`, `<li>`, `<b>`, `<strong>`, `<em>`, `<a href="…">`. HTML is sanitized to an allowlist before render. Newlines still work for plain strings (`pre-wrap`).
+
+In a TypeScript schema you can also pass React nodes:
+
+```tsx
+{
+  type: "typography",
+  variant: "p",
+  text: (
+    <ul>
+      <li>First</li>
+      <li>Hello {"{{firstname}}"}</li>
+    </ul>
+  ),
+}
+```
+
+Note: `{{field}}` interpolation only runs on **string** content. For ReactNode, bind live values yourself from your app or use a string with HTML/`{{field}}`.
 
 `visibleWhen` and a page's `skipWhen` use `eq`, `neq`, `in`, `notIn`, `empty`, `notEmpty`, `gt`, and `lt`. `match` is `"all"` (default) or `"any"`. Conditions read the live form values, so typography and skipped pages update as the user types.
 
@@ -184,7 +206,7 @@ Every region has a class and a `data-msf-part` attribute. Add a stylesheet after
 
 Shell: `msf`, `msf-shell`, `msf-page`, `msf-page-title`, `msf-page-description`, `msf-page-body`, `msf-footer`, `msf-progress`, `msf-btn`, `msf-btn-next`, `msf-btn-prev`, `msf-loading`, `msf-finished`, `msf-finished-title`, `msf-finished-body`.
 
-Fields: `msf-field`, `msf-field-{type}`, `msf-field-{name}`, `msf-label`, `msf-control`, `msf-helper`, `msf-radio-option`, `msf-stage`, `msf-stage-children`, `msf-select`, `msf-date`, `msf-file`, `msf-file-tile`, `msf-file-placeholder`, `msf-file-preview`, `msf-agreement`, `msf-agreement-check`, `msf-agreement-terms`, `msf-typography`.
+Fields: `msf-field`, `msf-field-{type}`, `msf-field-{name}`, `msf-label`, `msf-control`, `msf-helper`, `msf-radio-option`, `msf-stage`, `msf-stage-children`, `msf-select`, `msf-select-children`, `msf-date`, `msf-file`, `msf-file-tile`, `msf-file-placeholder`, `msf-file-preview`, `msf-agreement`, `msf-agreement-static`, `msf-agreement-static-title`, `msf-agreement-static-body`, `msf-agreement-check`, `msf-agreement-terms`, `msf-agreement-body`, `msf-typography`.
 
 Overlays: `msf-dialog`, `msf-dialog-title`, `msf-dialog-body`, `msf-dialog-actions`, `msf-sheet`, `msf-sheet-title`, `msf-sheet-body`, `msf-sheet-item`, `msf-camera`, `msf-camera-shutter`, `msf-camera-confirm`, `msf-camera-retake`, `msf-date-picker`, `msf-date-confirm`.
 

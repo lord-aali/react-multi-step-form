@@ -20,6 +20,7 @@ export type {
     FormTexts,
     FormValidator,
     RadioFieldSchema,
+    RichText,
     SelectFieldSchema,
     ShowWhen,
     StageFieldSchema,
@@ -28,12 +29,14 @@ export type {
     ValidationRule,
 } from "./form/schema"
 export {indexValidators, isFieldRequired, runValidator} from "./form/validators"
+export {looksLikeHtml, sanitizeHtml, resolveRichText} from "./form/richText"
+export {default as RichContent} from "./form/ui/RichContent"
 export {
-    TAPSI_DIGIT_CHARS,
-    TAPSI_PERSIAN_CHARS,
+    DIGIT_CHARS,
+    PERSIAN_CHARS,
     checkValidation,
     validateBirthCertNumber,
     validateNumbers,
     validatePersianNameField,
     validatePersianText,
-} from "./form/tapsiValidation"
+} from "./form/charValidation"

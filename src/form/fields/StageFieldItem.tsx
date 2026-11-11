@@ -1,9 +1,10 @@
 import {useEffect} from "react"
-import {FormControl, FormControlLabel, FormHelperText, FormLabel, Radio, RadioGroup} from "@mui/material"
+import {Box, FormControl, FormControlLabel, FormLabel, Radio, RadioGroup} from "@mui/material"
 import type {StageFieldSchema} from "../schema"
 import {useFormContext} from "../context"
 import {itemError} from "../logic"
 import {useFormVersion} from "../store"
+import FieldHelper from "./FieldHelper"
 import ItemList from "./ItemList"
 
 export default function StageFieldItem({item}: { item: StageFieldSchema }) {
@@ -22,7 +23,7 @@ export default function StageFieldItem({item}: { item: StageFieldSchema }) {
     }, [item.name, store, value, visible])
 
     return (
-        <FormControl className="msf-control msf-stage" component="fieldset" error={!!error} sx={{mb: 1}}>
+        <FormControl className="msf-control msf-stage" component="fieldset" fullWidth error={!!error} sx={{mb: 0}}>
             {item.label ? (
                 <FormLabel className="msf-label" sx={{fontWeight: 700, color: "text.primary"}}>{item.label}</FormLabel>
             ) : null}
@@ -50,11 +51,11 @@ export default function StageFieldItem({item}: { item: StageFieldSchema }) {
                     />
                 ))}
             </RadioGroup>
-            {error ? <FormHelperText className="msf-helper">{error}</FormHelperText> : null}
+            <FieldHelper error={error}/>
             {selected?.items ? (
-                <div className="msf-stage-children" data-msf-part="stage-children">
+                <Box className="msf-stage-children" data-msf-part="stage-children" sx={{mt: 3, width: "100%"}}>
                     <ItemList items={selected.items}/>
-                </div>
+                </Box>
             ) : null}
         </FormControl>
     )
