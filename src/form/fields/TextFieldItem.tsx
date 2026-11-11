@@ -30,12 +30,14 @@ export default function TextFieldItem({item}: { item: TextFieldSchema }) {
             fullWidth
             error={!!error}
             helperText={error || undefined}
-            FormHelperTextProps={{className: "msf-helper", sx: {mt: 0.75}}}
-            InputLabelProps={{className: "msf-label"}}
-            inputProps={{
-                inputMode: numeric ? "numeric" : undefined,
-                dir: fieldDir,
-                style: {direction: fieldDir},
+            slotProps={{
+                formHelperText: {className: "msf-helper", sx: {mt: 0.75}},
+                inputLabel: {className: "msf-label"},
+                htmlInput: {
+                    inputMode: numeric ? "numeric" : undefined,
+                    dir: fieldDir,
+                    style: {direction: fieldDir},
+                },
             }}
             sx={{
                 mb: 0,

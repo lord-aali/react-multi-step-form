@@ -9,7 +9,7 @@ import {
     Typography,
 } from "@mui/material"
 import BadgeOutlinedIcon from "@mui/icons-material/BadgeOutlined"
-import DeleteOutlineIcon from "@mui/icons-material/DeleteOutline"
+import DeleteOutlinedIcon from "@mui/icons-material/DeleteOutlined"
 import PhotoCameraIcon from "@mui/icons-material/PhotoCamera"
 import PhotoLibraryIcon from "@mui/icons-material/PhotoLibrary"
 import PlayArrowIcon from "@mui/icons-material/PlayArrow"
@@ -155,13 +155,13 @@ export default function FileFieldItem({item}: { item: FileFieldSchema }) {
                             else setCamera(true)
                         }}>
                             <ListItemIcon><PhotoCameraIcon/></ListItemIcon>
-                            <ListItemText primary={item.isVideo ? texts.cameraVideo : texts.cameraImage} primaryTypographyProps={{fontWeight: 600}}/>
+                            <ListItemText primary={item.isVideo ? texts.cameraVideo : texts.cameraImage} slotProps={{primary: {sx: {fontWeight: 600}}}}/>
                         </ListItemButton>
                     ) : null}
                     {sources.includes("gallery") ? (
                         <ListItemButton className="msf-sheet-item" onClick={() => inputRef.current?.click()}>
                             <ListItemIcon><PhotoLibraryIcon/></ListItemIcon>
-                            <ListItemText primary={texts.galleryPick} primaryTypographyProps={{fontWeight: 600}}/>
+                            <ListItemText primary={texts.galleryPick} slotProps={{primary: {sx: {fontWeight: 600}}}}/>
                         </ListItemButton>
                     ) : null}
                 </List>
@@ -237,7 +237,7 @@ export default function FileFieldItem({item}: { item: FileFieldSchema }) {
                         bgcolor: "white",
                         boxShadow: "rgba(0, 0, 0, 0.1) 0 0 4px 1px",
                     }}>
-                        <DeleteOutlineIcon/>
+                        <DeleteOutlinedIcon/>
                     </IconButton>
                     {item.isVideo ? (
                         <Box sx={{position: "relative", display: "flex"}}>

@@ -42,8 +42,10 @@ export function createFormTheme(direction: Direction): Theme {
                         borderRadius: 25,
                         fontWeight: 700,
                     },
-                    containedPrimary: {
-                        padding: "10px 24px",
+                    contained: {
+                        "&.MuiButton-colorPrimary": {
+                            padding: "10px 24px",
+                        },
                     },
                     sizeLarge: {
                         padding: "12px 28px",
@@ -88,20 +90,19 @@ export function createFormTheme(direction: Direction): Theme {
                         marginRight: "auto",
                         textAlign: "start",
                     },
-                    paperWidthFalse: {
-                        maxWidth: 420,
-                    },
                 },
             },
             MuiDrawer: {
                 styleOverrides: {
-                    paperAnchorBottom: {
-                        borderTopLeftRadius: 20,
-                        borderTopRightRadius: 20,
-                        width: "100%",
-                        maxWidth: 420,
-                        marginLeft: "auto",
-                        marginRight: "auto",
+                    root: {
+                        "&.MuiDrawer-anchorBottom > .MuiDrawer-paper": {
+                            borderTopLeftRadius: 20,
+                            borderTopRightRadius: 20,
+                            width: "100%",
+                            maxWidth: 420,
+                            marginLeft: "auto",
+                            marginRight: "auto",
+                        },
                     },
                 },
             },

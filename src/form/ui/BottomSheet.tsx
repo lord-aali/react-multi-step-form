@@ -44,11 +44,15 @@ export default function BottomSheet({
             <Drawer
                 anchor="bottom"
                 open={open}
-                onClose={onClose}
-                SlideProps={{mountOnEnter: true, unmountOnExit: true}}
+                onClose={(_event, reason) => {
+                    if (reason === "escapeKeyDown") return
+                    onClose()
+                }}
+                slotProps={{
+                    transition: {mountOnEnter: true, unmountOnExit: true},
+                    paper: {sx: paperStyle, className: "msf-sheet-paper"},
+                }}
                 transitionDuration={{enter: 300, exit: 250}}
-                ModalProps={{disableEscapeKeyDown: true}}
-                PaperProps={{sx: paperStyle, className: "msf-sheet-paper"}}
             >
                 {body}
             </Drawer>
@@ -63,7 +67,9 @@ export default function BottomSheet({
             onOpen={() => undefined}
             disableSwipeToOpen
             transitionDuration={{enter: 300, exit: 250}}
-            PaperProps={{sx: paperStyle, className: "msf-sheet-paper"}}
+            slotProps={{
+                paper: {sx: paperStyle, className: "msf-sheet-paper"},
+            }}
         >
             {body}
         </SwipeableDrawer>

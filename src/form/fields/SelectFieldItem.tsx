@@ -34,13 +34,15 @@ export default function SelectFieldItem({item}: { item: SelectFieldSchema }) {
                 required={isFieldRequired(item, validators)}
                 error={!!error}
                 helperText={error || undefined}
-                FormHelperTextProps={{className: "msf-helper", sx: {mt: 0.75}}}
-                InputLabelProps={{className: "msf-label"}}
-                InputProps={{
-                    readOnly: true,
-                    endAdornment: <KeyboardArrowDownIcon/>,
+                slotProps={{
+                    formHelperText: {className: "msf-helper", sx: {mt: 0.75}},
+                    inputLabel: {className: "msf-label"},
+                    input: {
+                        readOnly: true,
+                        endAdornment: <KeyboardArrowDownIcon/>,
+                    },
+                    htmlInput: {style: {cursor: "pointer", caretColor: "transparent"}},
                 }}
-                inputProps={{style: {cursor: "pointer", caretColor: "transparent"}}}
                 onClick={() => void openSheet()}
                 fullWidth
                 sx={{mb: 0, "& .MuiInputBase-root": {cursor: "pointer"}}}

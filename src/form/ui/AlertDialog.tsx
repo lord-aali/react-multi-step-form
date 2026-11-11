@@ -32,13 +32,15 @@ export default function AlertDialog({
                 aria-labelledby="msf-dialog-title"
                 maxWidth={false}
                 dir={dir}
-                PaperProps={{
-                    className: "msf-dialog-paper",
-                    dir,
-                    sx: {
-                        width: "100%",
-                        maxWidth: 420,
-                        mx: 2,
+                slotProps={{
+                    paper: {
+                        className: "msf-dialog-paper",
+                        dir,
+                        sx: {
+                            width: "100%",
+                            maxWidth: 420,
+                            mx: 2,
+                        },
                     },
                 }}
             >
