@@ -243,6 +243,7 @@ The Vite dev server proxies `/api` to that process. Edit `server/config/config.p
 - `DB_HOST`, `DB_NAME`, `DB_USER`, `DB_PASS`, `DB_CHARSET`
 - `API_KEY` for listing and deleting rows
 - `DRAFT_KEY`, 64 hex characters, used only on the server
+- `CORS_ENABLED` / `CORS_ORIGIN` to emit CORS headers (off by default; set a concrete origin, not `*`, when cookies are sent cross-origin)
 - `TABLES`
 
 Each table entry has a required `slug`, a physical table name, a public key column (beside the numeric `id`), and columns. Column types are `string`, `text`, `int`, `float`, `bool`, `date`, `datetime`, `json`, and `file`. On boot the server creates a missing database, creates missing tables, and adds missing columns. It does not drop columns.

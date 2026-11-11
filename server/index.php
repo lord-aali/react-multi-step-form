@@ -10,6 +10,14 @@ require __DIR__ . '/core/DraftCrypto.php';
 require __DIR__ . '/core/SessionStore.php';
 require __DIR__ . '/core/DatasetRepository.php';
 
+if (CORS_ENABLED) {
+    applyCors();
+    if (($_SERVER['REQUEST_METHOD'] ?? '') === 'OPTIONS') {
+        http_response_code(204);
+        exit;
+    }
+}
+
 if (!is_dir(STORAGE_DIR)) {
     mkdir(STORAGE_DIR, 0775, true);
 }
@@ -155,4 +163,19 @@ function requireApiKey(): void
     if (!is_string($given) || !hash_equals(API_KEY, $given)) {
         Response::send('failed', null, 'API key required', null, 401);
     }
+}
+
+function applyCors(): void
+{
+    $origin = CORS_ORIGIN;
+    if ($origin === '*') {
+        header('Access-Control-Allow-Origin: *');
+    } else {
+        header('Access-Control-Allow-Origin: ' . $origin);
+        header('Access-Control-Allow-Credentials: true');
+        header('Vary: Origin');
+    }
+    header('Access-Control-Allow-Methods: GET, POST, PUT, DELETE, OPTIONS');
+    header('Access-Control-Allow-Headers: Content-Type, X-Api-Key');
+    header('Access-Control-Max-Age: 86400');
 }
