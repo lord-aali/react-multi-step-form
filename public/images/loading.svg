@@ -1,0 +1,29 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" preserveAspectRatio="xMidYMid" width="200" height="200"
+     style="shape-rendering: auto; display: block;">
+    <style>
+        @keyframes rotate {
+        0% {
+        transform: rotateZ(0deg);
+        }
+        100% {
+        transform: rotateZ(360deg);
+        }
+        }
+
+        .shape {
+        animation: rotate;
+        animation-duration: 1.5s;
+        transform-origin: center;
+        animation-iteration-count: infinite;
+        animation-timing-function: linear;
+        }
+
+    </style>
+    <g class="shape">
+        <circle stroke-linecap="round" fill="none" stroke-dasharray="50.26548245743669 50.26548245743669"
+                stroke="#0065dc" stroke-width="8" r="32" cy="50" cx="50"
+                transform="matrix(-0.9685815980785955,0.24869597476339292,-0.24869597476339292,-0.9685815980785955,110.86387864209942,85.99428116576013)">
+
+        </circle>
+    </g>
+</svg>

@@ -1,0 +1,10 @@
+.msf,
+.msf * {
+    box-sizing: border-box;
+}
+
+.msf-camera,
+.msf-sheet,
+.msf-dialog {
+    font-family: Vazirmatn-FD, Vazirmatn, sans-serif;
+}
