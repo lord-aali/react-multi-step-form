@@ -40,8 +40,8 @@ export default function TextFieldItem({item}: { item: TextFieldSchema }) {
                     pattern: numeric ? "[0-9]*" : undefined,
                     dir: fieldDir,
                     style: {direction: fieldDir},
-                    maxLength,
-                    minLength,
+                    ...(maxLength !== undefined ? {maxLength} : {}),
+                    ...(minLength !== undefined ? {minLength} : {}),
                 },
             }}
             sx={{
@@ -58,7 +58,17 @@ export default function TextFieldItem({item}: { item: TextFieldSchema }) {
                 asked.current = false
                 store.markTouched(item.name)
             }}
-            onChange={(event) => store.set(item.name, sanitizeTextInput(item, event.target.value))}
+            onChange={(event) => {
+                const next = sanitizeTextInput(item, event.target.value)
+                store.set(item.name, next)
+            }}
+            onInput={(event) => {
+                const target = event.target as HTMLInputElement
+                const next = sanitizeTextInput(item, target.value)
+                if (target.value !== next) target.value = next
+                if (String(store.get(item.name) ?? "") !== next) store.set(item.name, next)
+            }}
         />
+
     )
 }
