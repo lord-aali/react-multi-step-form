@@ -1,6 +1,7 @@
 {
   "id": "registration",
   "apiBase": "/api",
+  "resumeColumn": "phone",
   "dir": "rtl",
   "pages": [
     {

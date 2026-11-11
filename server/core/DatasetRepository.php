@@ -55,6 +55,56 @@ final class DatasetRepository
         return $this->present($slug, $table, $row);
     }
 
+    public function findByResumeValue(string $slug, string $value): ?array
+    {
+        $table = Schema::table($slug);
+        $column = $table['resumeColumn'] ?? null;
+        if (!is_string($column) || $column === '' || !isset($table['columns'][$column])) {
+            Response::send('failed', null, 'Resume is not configured for this table', null, 400);
+        }
+        Database::ident($column);
+        $physical = '`' . Database::ident($table['name']) . '`';
+        $stmt = $this->db->prepare('SELECT * FROM ' . $physical . ' WHERE `' . $column . '` = ? LIMIT 1');
+        $stmt->execute([$value]);
+        $row = $stmt->fetch();
+        if (!$row) {
+            return null;
+        }
+        return $this->present($slug, $table, $row);
+    }
+
+    /** Build a client draft payload from a presented row. */
+    public function draftFromRow(string $slug, array $row): array
+    {
+        $table = Schema::table($slug);
+        $values = [];
+        $files = [];
+        foreach ($table['columns'] as $column => $type) {
+            if (!array_key_exists($column, $row)) {
+                continue;
+            }
+            $value = $row[$column];
+            if ($type === 'file') {
+                if (is_string($value) && $value !== '') {
+                    $files[$column] = true;
+                }
+                continue;
+            }
+            if ($value === null || is_string($value) || is_int($value) || is_float($value) || is_bool($value)) {
+                $values[$column] = $value;
+            }
+        }
+        $page = isset($values['page']) && is_numeric($values['page']) ? (int) $values['page'] : 0;
+        return [
+            'id' => $slug,
+            'page' => $page,
+            'rowKey' => (string) ($row['key'] ?? ''),
+            'rowId' => isset($row['id']) ? (int) $row['id'] : null,
+            'values' => $values,
+            'files' => $files,
+        ];
+    }
+
     public function list(string $slug, int $limit, int $offset): array
     {
         $table = Schema::table($slug);

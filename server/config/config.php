@@ -26,6 +26,8 @@ const TABLES = [
         'slug' => 'registration',
         'name' => 'registration_applications',
         'key' => 'public_key',
+        /** Column used to resume an expired/missing session (e.g. phone). */
+        'resumeColumn' => 'phone',
         'columns' => [
             'firstname' => 'string',
             'lastname' => 'string',

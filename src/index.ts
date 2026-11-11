@@ -37,6 +37,8 @@ export {
     runValidator,
     sanitizeTextInput,
 } from "./form/validators"
+export {resumeByValue} from "./form/api"
+export type {ResumeResult} from "./form/api"
 export {looksLikeHtml, sanitizeHtml, resolveRichText} from "./form/richText"
 export {default as RichContent} from "./form/ui/RichContent"
 export {

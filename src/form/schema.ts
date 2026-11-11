@@ -283,6 +283,11 @@ export interface FormSchema {
     id: string
     /** Base URL for the form API (e.g. "/api" or "https://example.com/api"). Overridden by the MultiStepForm `apiBase` prop when that prop is set. */
     apiBase?: string
+    /**
+     * Field name that matches server `resumeColumn` (e.g. "phone").
+     * When this field is filled and there is no row yet, Next resumes/creates via `/resume`.
+     */
+    resumeColumn?: string
     dir?: Direction
     texts?: Partial<FormTexts>
     pages: FormPage[]

@@ -265,9 +265,9 @@ The Vite dev server proxies `/api` to that process. Edit `server/config/config.p
 - `CORS_ENABLED` / `CORS_ORIGIN` to emit CORS headers (off by default; set a concrete origin, not `*`, when cookies are sent cross-origin)
 - `TABLES`
 
-Each table entry has a required `slug`, a physical table name, a public key column (beside the numeric `id`), and columns. Column types are `string`, `text`, `int`, `float`, `bool`, `date`, `datetime`, `json`, and `file`. On boot the server creates a missing database, creates missing tables, and adds missing columns. It does not drop columns.
+Each table entry has a required `slug`, a physical table name, a public key column (beside the numeric `id`), optional `resumeColumn`, and columns. Column types are `string`, `text`, `int`, `float`, `bool`, `date`, `datetime`, `json`, and `file`. On boot the server creates a missing database, creates missing tables, and adds missing columns. It does not drop columns. When `resumeColumn` is set, a unique index is added on that column.
 
-The sample slug is `registration`. The form's `id` must match that slug and is sent to the API as `id`. On the first successful step the form inserts a row and keeps the returned key inside the encrypted draft. Later steps update that row. The browser does not store the key.
+The sample slug is `registration` with `resumeColumn: "phone"`. The form's `id` must match that slug and is sent to the API as `id`. Set the same name on the client schema as `resumeColumn`. Pass `resumeValue` into `MultiStepForm` from a landing page, or let the user type that field in the form — when the session is missing/expired, `POST /api/resume` finds the row by that column or creates a new one.
 
 | Request | Who can call it |
 | --- | --- |
@@ -275,6 +275,7 @@ The sample slug is `registration`. The form's `id` must match that slug and is s
 | `GET /api/session` | The cookie holder. Returns the decrypted draft. |
 | `PUT /api/session` | The cookie holder. Replaces the draft. The body is sealed with `sodium_crypto_secretbox` before it is stored. |
 | `DELETE /api/session` | The cookie holder. |
+| `POST /api/resume` | Anyone. Body `{ "id", "value" }`. If the session is missing/expired, finds a row by the table `resumeColumn` or creates one. Binds the session draft. Returns `{ created, resumed, sessionPresent, key, row, draft }`. |
 | `POST /api/datasets` | Anyone. Body `{ "id", "values" }` where `id` is the table slug. No row key. Returns `{ "id", "key" }`. |
 | `PUT /api/datasets/{slug}/{key}` | Anyone who knows the key. |
 | `GET /api/datasets/{slug}/{key}` | Anyone who knows the key. No API key. |

@@ -42,7 +42,27 @@ final class SessionStore
     public function read(): ?array
     {
         $hash = $this->requireHash();
-        $row = $this->find($hash);
+        return $this->decodeDraft($this->find($hash));
+    }
+
+    /** Like read(), but returns null when the session cookie is missing/expired instead of 401. */
+    public function readOrNull(): ?array
+    {
+        $hash = $this->tokenHash();
+        if ($hash === null) {
+            return null;
+        }
+        return $this->decodeDraft($this->find($hash));
+    }
+
+    public function hasValidSession(): bool
+    {
+        $hash = $this->tokenHash();
+        return $hash !== null && $this->find($hash) !== null;
+    }
+
+    private function decodeDraft(?array $row): ?array
+    {
         if (!$row || $row['draft'] === null || $row['draft'] === '') {
             return null;
         }

@@ -71,6 +71,69 @@ function route(string $method, string $path, SessionStore $sessions, DatasetRepo
         Response::send('ok', ['ok' => true]);
     }
 
+    if ($method === 'POST' && $path === '/resume') {
+        $body = readJson();
+        $slug = (string) ($body['id'] ?? '');
+        $value = trim((string) ($body['value'] ?? ''));
+        if ($slug === '' || $value === '') {
+            Response::send('failed', null, 'id and value are required', null, 400);
+        }
+
+        $table = Schema::table($slug);
+        $resumeColumn = $table['resumeColumn'] ?? null;
+        if (!is_string($resumeColumn) || $resumeColumn === '') {
+            Response::send('failed', null, 'Resume is not configured for this table', null, 400);
+        }
+
+        $sessions->start();
+        $existingDraft = $sessions->readOrNull();
+        $sessionPresent = is_array($existingDraft)
+            && ($existingDraft['id'] ?? null) === $slug
+            && is_string($existingDraft['rowKey'] ?? null)
+            && $existingDraft['rowKey'] !== '';
+
+        if ($sessionPresent) {
+            $row = $datasets->find($slug, (string) $existingDraft['rowKey']);
+            if ($row !== null) {
+                Response::send('ok', [
+                    'created' => false,
+                    'resumed' => false,
+                    'sessionPresent' => true,
+                    'resumeColumn' => $resumeColumn,
+                    'id' => $row['id'],
+                    'key' => $row['key'],
+                    'row' => $row,
+                    'draft' => $datasets->draftFromRow($slug, $row),
+                ]);
+            }
+        }
+
+        // Session missing/expired/empty: look up by resume column, or create a new row.
+        $row = $datasets->findByResumeValue($slug, $value);
+        $created = false;
+        if ($row === null) {
+            $created = true;
+            $inserted = $datasets->insert($slug, [$resumeColumn => $value]);
+            $row = $datasets->find($slug, $inserted['key']);
+            if ($row === null) {
+                Response::send('failed', null, 'Could not create row', null, 500);
+            }
+        }
+
+        $draft = $datasets->draftFromRow($slug, $row);
+        $sessions->write($draft);
+        Response::send('ok', [
+            'created' => $created,
+            'resumed' => !$created,
+            'sessionPresent' => false,
+            'resumeColumn' => $resumeColumn,
+            'id' => $row['id'],
+            'key' => $row['key'],
+            'row' => $row,
+            'draft' => $draft,
+        ], null, null, $created ? 201 : 200);
+    }
+
     if ($method === 'POST' && $path === '/datasets') {
         $body = readJson();
         $slug = (string) ($body['id'] ?? '');

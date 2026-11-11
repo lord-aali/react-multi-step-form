@@ -4,6 +4,7 @@ import {PERSIAN_CHARS} from "../form/charValidation"
 export const sampleForm: FormSchema = {
     id: "registration",
     apiBase: "/api",
+    resumeColumn: "phone",
     dir: "rtl",
     pages: [
         {

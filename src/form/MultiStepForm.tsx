@@ -7,7 +7,8 @@ import type {DialogSpec, FormSchema} from "./schema"
 import {resolveTexts} from "./texts"
 import {FormStore, useFormVersion} from "./store"
 import {applyDefaults, collectValues, findStep, isPageValid, pageDialogs} from "./logic"
-import {ensureSession, getDataset, insertDataset, loadDraft, saveDraft, updateDataset, uploadFile} from "./api"
+import {ensureSession, getDataset, insertDataset, loadDraft, resumeByValue, saveDraft, updateDataset, uploadFile} from "./api"
+import type {DraftPayload} from "./store"
 import {DirectionScope} from "./theme/DirectionScope"
 import {contentAnimSx} from "./theme/animations"
 import {FormContextProvider} from "./context"
@@ -24,6 +25,11 @@ export interface MultiStepFormProps {
     schema?: FormSchema
     schemaUrl?: string
     apiBase?: string
+    /**
+     * Value for the table `resumeColumn` (e.g. phone from a landing page).
+     * When the browser session is missing/expired, the form resumes or creates the row via POST /resume.
+     */
+    resumeValue?: string
     onFinished?: (result: { id?: number; key?: string }) => void
 }
 
@@ -81,6 +87,7 @@ function FormShell(props: MultiStepFormProps) {
 
 function FormSession({
     apiBase: apiBaseProp,
+    resumeValue,
     onFinished,
     loaded,
     error,
@@ -128,6 +135,16 @@ function FormSession({
         ;(async () => {
             try {
                 await ensureSession(apiBase)
+                const landingValue = resumeValue?.trim()
+                if (landingValue) {
+                    const resumed = await resumeByValue(apiBase, loaded.id, landingValue)
+                    if (!cancel && resumed.status === "ok" && resumed.data) {
+                        applyResume(store, loaded.id, resumed.data.draft, resumed.data.row)
+                        lastSavedRef.current = store.saveFingerprint(loaded.id)
+                        return
+                    }
+                }
+
                 const draft = await loadDraft(apiBase)
                 if (cancel || draft.status !== "ok" || !draft.data || draft.data.id !== loaded.id) return
 
@@ -150,7 +167,7 @@ function FormSession({
         return () => {
             cancel = true
         }
-    }, [loaded, apiBase, store])
+    }, [loaded, apiBase, store, resumeValue])
 
     const page = loaded?.pages[store.page]
     const pageValid = loaded && page ? isPageValid(page, store, texts, validators) : false
@@ -183,16 +200,50 @@ function FormSession({
         try {
             let key = store.rowKey
             if (!key) {
-                const created = await insertDataset(apiBase, loaded.id, values)
-                if (created.status !== "ok" || !created.data?.key) {
-                    if (created.errors) store.setServerErrors(created.errors)
-                    pushSnackbar(enqueueSnackbar, "error", created.message || texts.fixErrors)
-                    return "invalid"
+                const resumeColumn = loaded.resumeColumn
+                const resumeRaw = resumeColumn ? values[resumeColumn] : null
+                const resumeVal = resumeRaw === null || resumeRaw === undefined ? "" : String(resumeRaw).trim()
+
+                if (resumeColumn && resumeVal) {
+                    const resumed = await resumeByValue(apiBase, loaded.id, resumeVal)
+                    if (resumed.status !== "ok" || !resumed.data?.key) {
+                        if (resumed.errors) store.setServerErrors(resumed.errors)
+                        pushSnackbar(enqueueSnackbar, "error", resumed.message || texts.fixErrors)
+                        return "invalid"
+                    }
+                    if (resumed.data.resumed || resumed.data.sessionPresent) {
+                        applyResume(store, loaded.id, resumed.data.draft, resumed.data.row)
+                        // Keep non-empty values the user just entered on this step.
+                        const keep: Record<string, string | number | boolean | null> = {}
+                        for (const [name, value] of Object.entries(values)) {
+                            if (value !== null && value !== "") keep[name] = value as string | number | boolean
+                        }
+                        if (Object.keys(keep).length) store.mergeValues(keep)
+                    } else {
+                        store.setRow(resumed.data.key, resumed.data.id)
+                    }
+                    key = store.rowKey || resumed.data.key
+                    const merged = collectValues(loaded, store)
+                    merged.page = store.page
+                    if (finalStep) merged.submitted = true
+                    const updated = await updateDataset(apiBase, loaded.id, key, merged)
+                    if (updated.status !== "ok") {
+                        if (updated.errors) store.setServerErrors(updated.errors)
+                        pushSnackbar(enqueueSnackbar, "error", updated.message || texts.fixErrors)
+                        return "invalid"
+                    }
+                    await saveDraft(apiBase, store.draft(loaded.id))
+                } else {
+                    const created = await insertDataset(apiBase, loaded.id, values)
+                    if (created.status !== "ok" || !created.data?.key) {
+                        if (created.errors) store.setServerErrors(created.errors)
+                        pushSnackbar(enqueueSnackbar, "error", created.message || texts.fixErrors)
+                        return "invalid"
+                    }
+                    key = created.data.key
+                    store.setRow(key, created.data.id)
+                    await saveDraft(apiBase, store.draft(loaded.id))
                 }
-                key = created.data.key
-                store.setRow(key, created.data.id)
-                // Persist row key in the anonymous session once after create.
-                await saveDraft(apiBase, store.draft(loaded.id))
             } else if (changed) {
                 const updated = await updateDataset(apiBase, loaded.id, key, values)
                 if (updated.status !== "ok") {
@@ -446,4 +497,17 @@ function hydrateFromDataset(
         values,
         files: {...(draft.files ?? {}), ...files},
     })
+}
+
+function applyResume(
+    store: FormStore,
+    formId: string,
+    draft: DraftPayload,
+    row: Record<string, unknown>,
+) {
+    if (draft?.rowKey) {
+        store.hydrate(draft)
+        return
+    }
+    hydrateFromDataset(store, formId, draft, row)
 }

@@ -62,6 +62,27 @@ final class Schema
                     $db->exec('ALTER TABLE ' . $quotedTable . ' ADD COLUMN `' . $column . '` ' . self::columnSql($type));
                 }
             }
+            self::ensureResumeIndex($db, $table, $physical, $quotedTable);
+        }
+    }
+
+    private static function ensureResumeIndex(PDO $db, array $table, string $physical, string $quotedTable): void
+    {
+        $resume = $table['resumeColumn'] ?? null;
+        if (!is_string($resume) || $resume === '') {
+            return;
+        }
+        if (!isset($table['columns'][$resume])) {
+            throw new InvalidArgumentException('resumeColumn must exist in columns for ' . $physical);
+        }
+        Database::ident($resume);
+        $index = 'uq_' . $physical . '_resume';
+        $existing = [];
+        foreach ($db->query('SHOW INDEX FROM ' . $quotedTable) as $row) {
+            $existing[$row['Key_name']] = true;
+        }
+        if (!isset($existing[$index])) {
+            $db->exec('ALTER TABLE ' . $quotedTable . ' ADD UNIQUE KEY `' . $index . '` (`' . $resume . '`)');
         }
     }
 

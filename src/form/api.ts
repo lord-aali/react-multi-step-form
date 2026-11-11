@@ -59,6 +59,25 @@ export function insertDataset(base: string, id: string, values: Record<string, u
     })
 }
 
+export interface ResumeResult {
+    created: boolean
+    resumed: boolean
+    sessionPresent: boolean
+    resumeColumn: string
+    id: number
+    key: string
+    row: Record<string, unknown>
+    draft: DraftPayload
+}
+
+/** Resume or create a row by the table's configured resume column when the session is missing/expired. */
+export function resumeByValue(base: string, id: string, value: string) {
+    return api<ResumeResult>(base, "/resume", {
+        method: "POST",
+        body: JSON.stringify({id, value}),
+    })
+}
+
 export function getDataset(base: string, id: string, key: string) {
     return api<Record<string, unknown>>(base, `/datasets/${encodeURIComponent(id)}/${key}`)
 }
