@@ -6,7 +6,17 @@ Schema-driven multi-step form for React, Material UI, and Vite. It supports RTL 
 npm install github:lord-aali/react-multi-step-form
 ```
 
-npm 7 and newer installs the peer dependencies with that command: React 19, MUI 5, Emotion, stylis, notistack, and keen-slider. The `prepare` script builds `dist` on install.
+This library targets **MUI v5** (not v6+). Install peers with pinned majors so npm does not pull the latest MUI 9 line:
+
+```bash
+npm install react@^19 react-dom@^19 \
+  @mui/material@^5.18.0 @mui/icons-material@^5.17.1 \
+  @emotion/react@^11.14.0 @emotion/styled@^11.14.1 @emotion/cache@^11.14.0 \
+  stylis@^4.3.6 stylis-plugin-rtl@^2.1.1 \
+  notistack@^3.0.2 keen-slider@^6.8.6
+```
+
+Do not run `npm install @mui/material @mui/icons-material` without a version — that resolves to MUI 9 and conflicts with this package’s peers. The `prepare` script builds `dist` on install.
 
 ## Use a TypeScript schema
 
