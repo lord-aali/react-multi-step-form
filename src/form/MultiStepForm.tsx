@@ -238,10 +238,19 @@ function FormShell({schema, schemaUrl, apiBase = "/api", onFinished}: MultiStepF
         <DirectionScope dir={dir}>
             <CssBaseline/>
             <GlobalStyles styles={{
-                ".notistack-SnackbarContainer .notistack-MuiContent": {
+                ".msf-snackbar-container .notistack-Snackbar": {
+                    width: "100%",
+                    maxWidth: 420,
+                    boxSizing: "border-box",
+                },
+                ".msf-snackbar-container .notistack-MuiContent": {
+                    width: "100%",
                     backgroundColor: "unset",
                     padding: 0,
                     boxShadow: "unset",
+                },
+                ".msf-snackbar-container .msf-snackbar": {
+                    width: "100%",
                 },
                 ".MuiPaper-root[role=dialog]": {borderRadius: "16px"},
             }}/>

@@ -12,6 +12,8 @@ export interface CustomMessage {
 }
 
 const sx: SxProps = {
+    width: "100%",
+    boxSizing: "border-box",
     ".MuiAlert-icon": {
         ml: "0 !important",
         mr: "8px !important",
@@ -19,6 +21,7 @@ const sx: SxProps = {
     },
     ".MuiAlert-message": {
         py: "12px !important",
+        width: "100%",
     },
 }
 
