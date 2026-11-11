@@ -144,6 +144,25 @@ export class FormStore {
             files,
         }
     }
+
+    /** Snapshot of field/file state used to skip unchanged Next saves (page is excluded). */
+    saveFingerprint(id: string): string {
+        const dirtyFiles = Object.entries(this.files)
+            .filter(([, file]) => file.dirty && file.blob)
+            .map(([name]) => name)
+            .sort()
+        return JSON.stringify({
+            id,
+            rowKey: this.rowKey ?? null,
+            values: this.values,
+            dirtyFiles,
+            fileFlags: Object.keys(this.files).sort(),
+        })
+    }
+
+    hasDirtyFiles(): boolean {
+        return Object.values(this.files).some((file) => !!(file.dirty && file.blob))
+    }
 }
 
 export function useFormVersion(store: FormStore) {

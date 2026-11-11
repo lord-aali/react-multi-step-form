@@ -7,7 +7,7 @@ import type {DialogSpec, FormSchema} from "./schema"
 import {resolveTexts} from "./texts"
 import {FormStore, useFormVersion} from "./store"
 import {applyDefaults, collectValues, findStep, isPageValid, pageDialogs} from "./logic"
-import {ensureSession, insertDataset, loadDraft, saveDraft, updateDataset, uploadFile} from "./api"
+import {ensureSession, getDataset, insertDataset, loadDraft, saveDraft, updateDataset, uploadFile} from "./api"
 import {DirectionScope} from "./theme/DirectionScope"
 import {contentAnimSx} from "./theme/animations"
 import {FormContextProvider} from "./context"
@@ -105,6 +105,7 @@ function FormSession({
     const [finished, setFinished] = useState(false)
     const [anim, setAnim] = useState("active")
     const [pending, setPending] = useState<{ spec: DialogSpec; resolve: (ok: boolean) => void } | null>(null)
+    const lastSavedRef = useRef<string>("")
     const ask = useCallback((spec: DialogSpec) => {
         return new Promise<boolean>((resolve) => {
             setPending({spec, resolve})
@@ -123,13 +124,24 @@ function FormSession({
         if (!loaded) return
         let cancel = false
         applyDefaults(loaded, store)
+        lastSavedRef.current = ""
         ;(async () => {
             try {
                 await ensureSession(apiBase)
                 const draft = await loadDraft(apiBase)
-                if (!cancel && draft.status === "ok" && draft.data && draft.data.id === loaded.id) {
+                if (cancel || draft.status !== "ok" || !draft.data || draft.data.id !== loaded.id) return
+
+                if (draft.data.rowKey) {
+                    const row = await getDataset(apiBase, loaded.id, draft.data.rowKey)
+                    if (!cancel && row.status === "ok" && row.data) {
+                        hydrateFromDataset(store, loaded.id, draft.data, row.data)
+                    } else if (!cancel) {
+                        store.hydrate(draft.data)
+                    }
+                } else if (!cancel) {
                     store.hydrate(draft.data)
                 }
+                if (!cancel) lastSavedRef.current = store.saveFingerprint(loaded.id)
             } catch {
             } finally {
                 if (!cancel) setReady(true)
@@ -139,14 +151,6 @@ function FormSession({
             cancel = true
         }
     }, [loaded, apiBase, store])
-
-    useEffect(() => {
-        if (!ready || !loaded) return
-        const timer = window.setTimeout(() => {
-            void saveDraft(apiBase, store.draft(loaded.id)).catch(() => undefined)
-        }, 400)
-        return () => window.clearTimeout(timer)
-    }, [ready, loaded, apiBase, store, store.getVersion()])
 
     const page = loaded?.pages[store.page]
     const pageValid = loaded && page ? isPageValid(page, store, texts, validators) : false
@@ -167,6 +171,12 @@ function FormSession({
 
     async function persist(finalStep: boolean): Promise<"ok" | "invalid" | "offline"> {
         if (!loaded) return "invalid"
+        const fingerprint = store.saveFingerprint(loaded.id)
+        const changed = fingerprint !== lastSavedRef.current || finalStep
+        if (!changed && store.rowKey && !store.hasDirtyFiles()) {
+            return "ok"
+        }
+
         const values = collectValues(loaded, store)
         values.page = store.page
         if (finalStep) values.submitted = true
@@ -181,7 +191,9 @@ function FormSession({
                 }
                 key = created.data.key
                 store.setRow(key, created.data.id)
-            } else {
+                // Persist row key in the anonymous session once after create.
+                await saveDraft(apiBase, store.draft(loaded.id))
+            } else if (changed) {
                 const updated = await updateDataset(apiBase, loaded.id, key, values)
                 if (updated.status !== "ok") {
                     if (updated.errors) store.setServerErrors(updated.errors)
@@ -189,11 +201,9 @@ function FormSession({
                     return "invalid"
                 }
             }
-            const active = new Set(
-                Object.entries(store.files)
-                    .filter(([, file]) => file.dirty && file.blob)
-                    .map(([name]) => name),
-            )
+            const active = Object.entries(store.files)
+                .filter(([, file]) => file.dirty && file.blob)
+                .map(([name]) => name)
             for (const name of active) {
                 const file = store.files[name]
                 if (!file?.blob || !key) continue
@@ -205,7 +215,7 @@ function FormSession({
                 }
                 store.setFile(name, {...file, dirty: false, onServer: true})
             }
-            await saveDraft(apiBase, store.draft(loaded.id))
+            lastSavedRef.current = store.saveFingerprint(loaded.id)
             return "ok" as const
         } catch {
             return "offline" as const
@@ -407,4 +417,33 @@ function FormSession({
 
 function wait(ms: number) {
     return new Promise((resolve) => window.setTimeout(resolve, ms))
+}
+
+function hydrateFromDataset(
+    store: FormStore,
+    formId: string,
+    draft: { page?: number; rowKey?: string; rowId?: number; files?: Record<string, boolean> },
+    row: Record<string, unknown>,
+) {
+    const values: Record<string, string | number | boolean | null> = {}
+    const files: Record<string, boolean> = {}
+    for (const [name, value] of Object.entries(row)) {
+        if (name === "id" || name === "key") continue
+        if (typeof value === "string" && (value.includes("/datasets/") && value.includes("/files/"))) {
+            files[name] = true
+            continue
+        }
+        if (value === null || typeof value === "string" || typeof value === "number" || typeof value === "boolean") {
+            values[name] = value
+        }
+    }
+    const page = Number(values.page)
+    store.hydrate({
+        id: formId,
+        page: Number.isFinite(page) ? page : (draft.page ?? 0),
+        rowKey: draft.rowKey || String(row.key ?? ""),
+        rowId: draft.rowId ?? (typeof row.id === "number" ? row.id : undefined),
+        values,
+        files: {...(draft.files ?? {}), ...files},
+    })
 }

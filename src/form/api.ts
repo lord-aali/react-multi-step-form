@@ -59,6 +59,10 @@ export function insertDataset(base: string, id: string, values: Record<string, u
     })
 }
 
+export function getDataset(base: string, id: string, key: string) {
+    return api<Record<string, unknown>>(base, `/datasets/${encodeURIComponent(id)}/${key}`)
+}
+
 export function updateDataset(base: string, id: string, key: string, values: Record<string, unknown>) {
     return api(base, `/datasets/${encodeURIComponent(id)}/${key}`, {
         method: "PUT",
