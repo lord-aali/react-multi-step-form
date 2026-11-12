@@ -1,11 +1,11 @@
-import {useCallback, useEffect, useMemo, useRef, useState} from "react"
+import {forwardRef, useCallback, useEffect, useImperativeHandle, useMemo, useRef, useState, type Ref} from "react"
 import {Box, Button, CircularProgress, CssBaseline, GlobalStyles, LinearProgress, Stack, Typography} from "@mui/material"
 import ArrowBackIosNewIcon from "@mui/icons-material/ArrowBackIosNew"
 import ArrowForwardIosIcon from "@mui/icons-material/ArrowForwardIos"
 import {SnackbarProvider, useSnackbar} from "notistack"
 import type {DialogSpec, FormSchema} from "./schema"
 import {resolveTexts} from "./texts"
-import {FormStore, useFormVersion} from "./store"
+import {FormStore, useFormVersion, type Scalar} from "./store"
 import {applyDefaults, collectValues, findStep, isPageValid, pageDialogs} from "./logic"
 import {ensureSession, getDataset, insertDataset, loadDraft, resumeByValue, saveDraft, updateDataset, uploadFile} from "./api"
 import type {DraftPayload} from "./store"
@@ -21,6 +21,14 @@ import {pushSnackbar} from "./ui/CustomSnackbar"
 import loadingUrl from "./assets/loading.svg?no-inline"
 import timeUrl from "./assets/time.svg?no-inline"
 
+/** Imperative API for reading/writing field values (including `hidden` fields). */
+export interface MultiStepFormHandle {
+    getValue(name: string): Scalar | undefined
+    setValue(name: string, value: Scalar): void
+    getValues(): Record<string, Scalar>
+    setValues(partial: Record<string, Scalar>): void
+}
+
 export interface MultiStepFormProps {
     schema?: FormSchema
     schemaUrl?: string
@@ -31,14 +39,16 @@ export interface MultiStepFormProps {
      */
     resumeValue?: string
     onFinished?: (result: { id?: number; key?: string }) => void
+    /** Called once after the form session is ready (draft/resume hydrated). */
+    onReady?: (api: MultiStepFormHandle) => void
 }
 
-export function MultiStepForm(props: MultiStepFormProps) {
-    return <FormShell {...props}/>
-}
+export const MultiStepForm = forwardRef<MultiStepFormHandle, MultiStepFormProps>(function MultiStepForm(props, ref) {
+    return <FormShell {...props} formRef={ref}/>
+})
 
-function FormShell(props: MultiStepFormProps) {
-    const {schema, schemaUrl} = props
+function FormShell(props: MultiStepFormProps & { formRef?: Ref<MultiStepFormHandle> }) {
+    const {schema, schemaUrl, formRef} = props
     const [loaded, setLoaded] = useState<FormSchema | null>(schema ?? null)
     const [error, setError] = useState<string>()
     const dir = loaded?.dir === "ltr" ? "ltr" : "rtl"
@@ -79,7 +89,7 @@ function FormShell(props: MultiStepFormProps) {
                 anchorOrigin={{vertical: "top", horizontal: "center"}}
                 classes={{containerRoot: "msf-snackbar-container"}}
             >
-                <FormSession {...props} loaded={loaded} error={error} dir={dir}/>
+                <FormSession {...props} formRef={formRef} loaded={loaded} error={error} dir={dir}/>
             </SnackbarProvider>
         </DirectionScope>
     )
@@ -89,10 +99,13 @@ function FormSession({
     apiBase: apiBaseProp,
     resumeValue,
     onFinished,
+    onReady,
+    formRef,
     loaded,
     error,
     dir,
 }: MultiStepFormProps & {
+    formRef?: Ref<MultiStepFormHandle>
     loaded: FormSchema | null
     error?: string
     dir: "rtl" | "ltr"
@@ -113,11 +126,31 @@ function FormSession({
     const [anim, setAnim] = useState("active")
     const [pending, setPending] = useState<{ spec: DialogSpec; resolve: (ok: boolean) => void } | null>(null)
     const lastSavedRef = useRef<string>("")
+    const readyNotified = useRef(false)
     const ask = useCallback((spec: DialogSpec) => {
         return new Promise<boolean>((resolve) => {
             setPending({spec, resolve})
         })
     }, [])
+
+    const api = useMemo<MultiStepFormHandle>(() => ({
+        getValue: (name) => store.get(name),
+        setValue: (name, value) => store.set(name, value),
+        getValues: () => ({...store.values}),
+        setValues: (partial) => store.mergeValues(partial),
+    }), [store])
+
+    useImperativeHandle(formRef, () => api, [api])
+
+    useEffect(() => {
+        readyNotified.current = false
+    }, [loaded])
+
+    useEffect(() => {
+        if (!ready || readyNotified.current) return
+        readyNotified.current = true
+        onReady?.(api)
+    }, [ready, api, onReady])
 
     function closePrompt(ok: boolean) {
         pending?.resolve(ok)

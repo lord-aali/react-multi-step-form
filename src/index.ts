@@ -3,7 +3,8 @@ import "./form/assets/fonts/vazirmatn-fd/Vazirmatn-font-face.css"
 import "./form/form.css"
 
 export {MultiStepForm} from "./form/MultiStepForm"
-export type {MultiStepFormProps} from "./form/MultiStepForm"
+export type {MultiStepFormHandle, MultiStepFormProps} from "./form/MultiStepForm"
+export type {Scalar} from "./form/store"
 export {createFormTheme} from "./form/theme/theme"
 export {defaultTexts, resolveTexts} from "./form/texts"
 export type {
@@ -20,6 +21,7 @@ export type {
     FormSchema,
     FormTexts,
     FormValidator,
+    HiddenFieldSchema,
     RadioFieldSchema,
     RichText,
     SelectFieldSchema,

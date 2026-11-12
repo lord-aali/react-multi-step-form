@@ -31,7 +31,7 @@ function messageFor(
 }
 
 export function resolveFieldValidators(item: FormItem, _map: ValidatorMap = {}): FormValidator[] {
-    if (item.type === "typography") return []
+    if (item.type === "typography" || item.type === "hidden") return []
 
     const out: FormValidator[] = []
 

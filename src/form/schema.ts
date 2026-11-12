@@ -234,6 +234,16 @@ export interface TypographySchema extends FieldBase {
     align?: "inherit" | "left" | "center" | "right" | "justify"
 }
 
+/**
+ * Non-visual field stored with the form. Update via `MultiStepForm` ref
+ * (`setValue` / `setValues`) or `defaultValue`. Always submitted with saves.
+ */
+export interface HiddenFieldSchema extends FieldBase {
+    type: "hidden"
+    name: string
+    defaultValue?: string | number | boolean
+}
+
 export type FormItem =
     | TextFieldSchema
     | RadioFieldSchema
@@ -243,6 +253,7 @@ export type FormItem =
     | FileFieldSchema
     | AgreementFieldSchema
     | TypographySchema
+    | HiddenFieldSchema
 
 export interface FormPage {
     id: string

@@ -118,7 +118,7 @@ export function itemError(
     texts: FormTexts,
     validators: ValidatorMap = {},
 ): string | undefined {
-    if (item.type === "typography" || !item.name) return undefined
+    if (item.type === "typography" || item.type === "hidden" || !item.name) return undefined
     const server = store.serverErrors[item.name]
     if (server) return server
 
@@ -139,7 +139,7 @@ export function validateItem(
     texts: FormTexts,
     validators: ValidatorMap = {},
 ): string | undefined {
-    if (item.type === "typography" || !item.name) return undefined
+    if (item.type === "typography" || item.type === "hidden" || !item.name) return undefined
 
     if (item.type === "text") {
         return validateScalarValue(item, String(store.get(item.name) ?? ""), validators, texts)
@@ -214,10 +214,16 @@ export function collectValues(schema: FormSchema, store: FormStore): Record<stri
     schema.pages.forEach((page) => {
         eachBranch(page.items, (item) => {
             if (item.name) named.add(item.name)
+            // Hidden fields always persist, even when their page is skipped.
+            if (item.type === "hidden" && item.name) {
+                active.add(item.name)
+                const value = store.get(item.name)
+                out[item.name] = value === undefined ? null : value
+            }
         })
         if (isPageSkipped(page, store.values)) return
         eachVisible(page.items, store.values, (item) => {
-            if (!item.name || item.type === "typography") return
+            if (!item.name || item.type === "typography" || item.type === "hidden") return
             active.add(item.name)
             if (item.type === "file") return
             const value = store.get(item.name)

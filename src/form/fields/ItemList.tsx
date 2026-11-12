@@ -41,6 +41,7 @@ export default function ItemList({items}: { items: FormItem[] }) {
     return (
         <>
             {items.map((item, index) => {
+                if (item.type === "hidden") return null
                 if (!isItemVisible(item, store.values)) return null
                 const key = item.name ? `${item.type}-${item.name}` : `${item.type}-${index}`
                 return (
