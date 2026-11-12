@@ -92,7 +92,7 @@ Field `type` values:
 | `radio` | `FormControl`, `FormLabel`, `RadioGroup`, `Radio`. |
 | `stage` | Horizontal radios. Only the selected option's `items` are mounted. |
 | `select` | Read-only `TextField` that opens a bottom sheet. An item may contain nested `items`. |
-| `date` | Jalali year, month, and day wheels in a bottom sheet. The stored value is `year/month/day`. |
+| `date` | Year/month/day wheels in a bottom sheet. Set `calendar` to `"jalali"` (default) or `"gregorian"`. Stored value is `year/month/day`. |
 | `file` | Photo or video tile. `camera` is `advanced` (default) or `native`. |
 | `agreement` | MUI `Checkbox`. Optional `terms` can show `static` above the checkbox, or open as an `alert` / `sheet`. |
 | `typography` | `h1` through `h6`, `p`, or `span`. `color` falls back to the theme. `{{fieldName}}` is replaced with the live value. |
@@ -192,6 +192,7 @@ const schema: FormSchema = {
 | `pattern` | JavaScript regex in `value`. |
 | `email` | Email shape. |
 | `jalaliDate` | `year/month/day` Jalali text. |
+| `gregorianDate` | `year/month/day` Gregorian text (valid calendar day). |
 
 `errorMessage` is the empty/required message. `errorMessages` overrides a rule type's message on that field (`persianName`, `digits`, `length`, `pattern`, …).
 

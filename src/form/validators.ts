@@ -5,6 +5,7 @@ const DIGITS = /^[0-9]+$/
 const DECIMAL = /^[0-9]+(\.[0-9]+)?$/
 const EMAIL = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
 const JALALI = /^\d{3,4}\/\d{1,2}\/\d{1,2}$/
+const DATE_YMD = /^\d{3,4}\/\d{1,2}\/\d{1,2}$/
 
 export type ValidatorMap = Record<string, FormValidator>
 
@@ -115,9 +116,20 @@ export function runValidator(
         case "jalaliDate":
             if (!JALALI.test(value)) return msg()
             return undefined
+        case "gregorianDate":
+            if (!DATE_YMD.test(value) || !isValidGregorianYmd(value)) return msg()
+            return undefined
         default:
             return undefined
     }
+}
+
+function isValidGregorianYmd(value: string): boolean {
+    const [y, m, d] = value.split("/").map((part) => Number(part))
+    if (!Number.isFinite(y) || !Number.isFinite(m) || !Number.isFinite(d)) return false
+    if (m < 1 || m > 12 || d < 1 || d > 31) return false
+    const dt = new Date(y, m - 1, d)
+    return dt.getFullYear() === y && dt.getMonth() === m - 1 && dt.getDate() === d
 }
 
 function ruleAsValidator(rule: ValidationRule): FormValidator {
@@ -144,6 +156,8 @@ function ruleAsValidator(rule: ValidationRule): FormValidator {
             return {slug: "pattern", type: "pattern", pattern: rule.value, message: rule.message}
         case "jalaliDate":
             return {slug: "jalaliDate", type: "jalaliDate", message: rule.message}
+        case "gregorianDate":
+            return {slug: "gregorianDate", type: "gregorianDate", message: rule.message}
         case "required":
             return {slug: "required", type: "required", message: rule.message}
         default:
@@ -225,4 +239,4 @@ export function clampTextValue(item: TextFieldSchema, value: string): string {
     return sanitizeTextInput(item, value)
 }
 
-export {DIGITS, EMAIL, JALALI}
+export {DIGITS, EMAIL, JALALI, DATE_YMD}

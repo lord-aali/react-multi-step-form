@@ -51,6 +51,7 @@ export type ValidationRule =
     | { type: "pattern"; value: string; message?: string }
     | { type: "email"; message?: string }
     | { type: "jalaliDate"; message?: string }
+    | { type: "gregorianDate"; message?: string }
 
 /** Runtime validator shape used by the validation engine (converted from field `rules`). */
 export type FormValidator =
@@ -104,6 +105,11 @@ export type FormValidator =
     | {
         slug: string
         type: "jalaliDate"
+        message?: string
+    }
+    | {
+        slug: string
+        type: "gregorianDate"
         message?: string
     }
 
@@ -169,6 +175,8 @@ export interface SelectFieldSchema extends FieldBase {
     defaultValue?: string
 }
 
+export type DateCalendar = "jalali" | "gregorian"
+
 export interface DateFieldSchema extends FieldBase {
     type: "date"
     name: string
@@ -176,6 +184,8 @@ export interface DateFieldSchema extends FieldBase {
     dialogTitle?: string
     placeholder?: string
     required?: boolean
+    /** Calendar system for the wheel picker. Default: `"jalali"`. */
+    calendar?: DateCalendar
     yearRange?: { min?: number; max?: number }
     formatMonthPreview?: "string" | "numeric"
     defaultValue?: string

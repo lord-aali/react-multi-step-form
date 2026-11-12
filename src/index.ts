@@ -9,6 +9,7 @@ export {defaultTexts, resolveTexts} from "./form/texts"
 export type {
     AgreementFieldSchema,
     CompareOp,
+    DateCalendar,
     DateFieldSchema,
     DialogSpec,
     Direction,

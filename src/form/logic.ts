@@ -159,6 +159,13 @@ export function validateItem(
         const value = String(store.get(item.name) ?? "")
         if (!value) return item.errorMessage || texts.required
         if (!JALALI.test(value)) return item.errorMessage || texts.invalid
+        if (item.calendar === "gregorian") {
+            const [y, m, d] = value.split("/").map((part) => Number(part))
+            const dt = new Date(y, m - 1, d)
+            if (dt.getFullYear() !== y || dt.getMonth() !== m - 1 || dt.getDate() !== d) {
+                return item.errorMessage || texts.invalid
+            }
+        }
         return undefined
     }
 

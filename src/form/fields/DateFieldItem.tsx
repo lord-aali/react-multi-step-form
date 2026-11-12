@@ -56,6 +56,7 @@ export default function DateFieldItem({item}: { item: DateFieldSchema }) {
             />
             <BottomSheet open={open} onClose={() => setOpen(false)} title={item.dialogTitle || item.title} persistent>
                 <DatePicker2
+                    calendar={item.calendar ?? "jalali"}
                     confirmLabel={texts.confirm}
                     defaultDate={parseStored(value)}
                     yearRange={item.yearRange}
