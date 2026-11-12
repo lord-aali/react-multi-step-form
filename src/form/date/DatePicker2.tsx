@@ -208,7 +208,8 @@ function DatePicker2({
             day: d,
             yearIdx: yearIdx >= 0 ? yearIdx : 0,
             monthIdx: clamp(12 - m.number, 0, 11),
-            dayIdx: clamp(maxDay - d, 0, maxDay - 1),
+            // Day wheel is always 31 slides so month length never reindexes it.
+            dayIdx: clamp(31 - d, 0, 30),
         }
     }
 
@@ -218,7 +219,11 @@ function DatePicker2({
     const [day, setDay] = useState(defaults.day)
     const defaultsApplied = useRef(false)
 
-    const dayCount = calendar === "gregorian" ? daysInGregorianMonth(year, month.number) : 31
+    // Keep a fixed 31-day wheel for both calendars so changing month/year never
+    // rebuilds slides (Gregorian month lengths would otherwise flicker the day column).
+    const maxDayForSelection = calendar === "gregorian"
+        ? daysInGregorianMonth(year, month.number)
+        : 31
 
     const updateActiveSlide = useCallback((ins: SliderData) => {
         const activeIndex = ins.track.details.rel
@@ -315,20 +320,6 @@ function DatePicker2({
         }
     }, [defaults.yearIdx, defaults.monthIdx, defaults.dayIdx, yearIns, monthIns, dayIns])
 
-    useEffect(() => {
-        let nextDay = day
-        setDay((current) => {
-            nextDay = Math.min(current, dayCount)
-            return nextDay
-        })
-        const daySlider = dayIns.current
-        if (!daySlider || !defaultsApplied.current) return
-        daySlider.update()
-        daySlider.moveToIdx(clamp(dayCount - nextDay, 0, dayCount - 1), true)
-        // Only when month/year changes the day count — avoid fighting the day wheel while scrolling.
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [dayCount, dayIns])
-
     const months: ReactNode[] = monthNames.map((name, index) => (
         <Box
             key={`m_${index + 1}`}
@@ -344,9 +335,17 @@ function DatePicker2({
 
     const days = (): ReactNode[] => {
         const items: ReactNode[] = []
-        for (let i = dayCount; i >= 1; i--) {
+        for (let i = 31; i >= 1; i--) {
+            const invalid = i > maxDayForSelection
             items.push(
-                <Box key={`d_${i}`} className="keen-slider__slide" sx={itemSx}>
+                <Box
+                    key={`d_${i}`}
+                    className="keen-slider__slide"
+                    sx={{
+                        ...itemSx,
+                        ...(invalid ? {opacity: 0.35} : null),
+                    }}
+                >
                     {formatDigit(i, calendar)}
                 </Box>,
             )
@@ -361,11 +360,10 @@ function DatePicker2({
     ))
 
     function submit() {
-        const maxDay = calendar === "gregorian" ? daysInGregorianMonth(year, month.number) : 31
         onDataReady({
             y: year,
             m: month,
-            d: Math.min(day, maxDay),
+            d: Math.min(day, maxDayForSelection),
         })
     }
 
