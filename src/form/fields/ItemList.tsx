@@ -5,6 +5,7 @@ import {useFormVersion} from "../store"
 import FieldFrame from "./FieldFrame"
 import TextFieldItem from "./TextFieldItem"
 import RadioFieldItem from "./RadioFieldItem"
+import CheckboxFieldItem from "./CheckboxFieldItem"
 import StageFieldItem from "./StageFieldItem"
 import SelectFieldItem from "./SelectFieldItem"
 import DateFieldItem from "./DateFieldItem"
@@ -18,6 +19,8 @@ function ItemSwitch({item}: { item: FormItem }) {
             return <TextFieldItem item={item}/>
         case "radio":
             return <RadioFieldItem item={item}/>
+        case "checkbox":
+            return <CheckboxFieldItem item={item}/>
         case "stage":
             return <StageFieldItem item={item}/>
         case "select":

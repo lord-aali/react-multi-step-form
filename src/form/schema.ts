@@ -143,6 +143,27 @@ export interface RadioFieldSchema extends FieldBase {
     defaultValue?: string
 }
 
+export interface CheckboxOption {
+    value: string
+    label: string
+    hidden?: boolean
+}
+
+export interface CheckboxFieldSchema extends FieldBase {
+    type: "checkbox"
+    name: string
+    label?: string
+    required?: boolean
+    options: CheckboxOption[]
+    /**
+     * Joins selected option values into one stored string.
+     * Default: `","` (e.g. `"a,b,c"`).
+     */
+    separator?: string
+    /** Pre-selected values joined with `separator`. */
+    defaultValue?: string
+}
+
 export interface StageOption {
     value: string
     label: string
@@ -247,6 +268,7 @@ export interface HiddenFieldSchema extends FieldBase {
 export type FormItem =
     | TextFieldSchema
     | RadioFieldSchema
+    | CheckboxFieldSchema
     | StageFieldSchema
     | SelectFieldSchema
     | DateFieldSchema

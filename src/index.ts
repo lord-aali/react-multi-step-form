@@ -9,6 +9,8 @@ export {createFormTheme} from "./form/theme/theme"
 export {defaultTexts, resolveTexts} from "./form/texts"
 export type {
     AgreementFieldSchema,
+    CheckboxFieldSchema,
+    CheckboxOption,
     CompareOp,
     DateCalendar,
     DateFieldSchema,

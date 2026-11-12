@@ -147,7 +147,7 @@ export function validateItem(
 
     if (!isFieldRequired(item, validators)) return undefined
 
-    if (item.type === "radio" || item.type === "stage" || item.type === "select") {
+    if (item.type === "radio" || item.type === "checkbox" || item.type === "stage" || item.type === "select") {
         const value = store.get(item.name)
         if (value === undefined || value === null || value === "") {
             return item.errorMessage || texts.required
