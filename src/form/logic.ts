@@ -20,6 +20,13 @@ export function conditionMatches(
     return (match ?? "all") === "any" ? results.some(Boolean) : results.every(Boolean)
 }
 
+function fieldContains(haystack: unknown, needle: unknown): boolean {
+    const text = String(haystack ?? "")
+    const part = String(needle ?? "")
+    if (!part) return false
+    return text.includes(part)
+}
+
 function evalCondition(condition: ShowWhen, values: Record<string, Scalar | undefined>): boolean {
     const raw = values[condition.field]
     const empty = raw === undefined || raw === null || raw === ""
@@ -37,9 +44,21 @@ function evalCondition(condition: ShowWhen, values: Record<string, Scalar | unde
         case "lt":
             return Number(raw) < Number(condition.value)
         case "in":
-            return Array.isArray(condition.value) && condition.value.map(String).includes(String(raw ?? ""))
+            // Array: field value is one of the listed values.
+            // Scalar: listed value appears inside the field's text.
+            if (Array.isArray(condition.value)) {
+                return condition.value.map(String).includes(String(raw ?? ""))
+            }
+            return fieldContains(raw, condition.value)
         case "notIn":
-            return Array.isArray(condition.value) && !condition.value.map(String).includes(String(raw ?? ""))
+            if (Array.isArray(condition.value)) {
+                return !condition.value.map(String).includes(String(raw ?? ""))
+            }
+            return !fieldContains(raw, condition.value)
+        case "contains":
+            return fieldContains(raw, condition.value)
+        case "notContains":
+            return !fieldContains(raw, condition.value)
         default:
             return true
     }

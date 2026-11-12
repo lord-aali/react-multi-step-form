@@ -4,7 +4,18 @@ export type RichText = string | ReactNode
 
 export type Direction = "rtl" | "ltr"
 
-export type CompareOp = "eq" | "neq" | "in" | "notIn" | "empty" | "notEmpty" | "gt" | "lt"
+export type CompareOp =
+    | "eq"
+    | "neq"
+    | "in"
+    | "notIn"
+    /** True when `value` appears inside the field's text (e.g. checkbox joined string). */
+    | "contains"
+    | "notContains"
+    | "empty"
+    | "notEmpty"
+    | "gt"
+    | "lt"
 
 export interface ShowWhen {
     field: string
