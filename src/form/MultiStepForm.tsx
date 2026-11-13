@@ -6,7 +6,7 @@ import {SnackbarProvider, useSnackbar} from "notistack"
 import type {DialogSpec, FormSchema} from "./schema"
 import {resolveTexts} from "./texts"
 import {FormStore, useFormVersion, type Scalar} from "./store"
-import {applyDefaults, collectValues, findStep, isPageValid, pageDialogs} from "./logic"
+import {applyDefaults, collectValues, findStep, isPageValid, pageDialogs, pageProgress} from "./logic"
 import {ensureSession, getDataset, insertDataset, loadDraft, resumeByValue, saveDraft, updateDataset, uploadFile} from "./api"
 import type {DraftPayload} from "./store"
 import {DirectionScope} from "./theme/DirectionScope"
@@ -207,6 +207,7 @@ function FormSession({
     const nextIndex = loaded ? findStep(loaded.pages, store.page, 1, store.values) : -1
     const prevIndex = loaded ? findStep(loaded.pages, store.page, -1, store.values) : -1
     const isLast = nextIndex < 0
+    const progress = loaded ? pageProgress(loaded.pages, store.page, store.values) : 0
 
     async function animateTo(index: number, direction: "next" | "prev") {
         setBusy(true)
@@ -434,7 +435,7 @@ function FormSession({
                                     <LinearProgress
                                         className="msf-progress"
                                         variant="determinate"
-                                        value={((store.page + 1) / loaded.pages.length) * 100}
+                                        value={progress}
                                         sx={{height: 6, borderRadius: 3}}
                                     />
                                 </Box>

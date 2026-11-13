@@ -83,6 +83,19 @@ export function findStep(pages: FormPage[], from: number, dir: 1 | -1, values: R
     return -1
 }
 
+/** 0–100 fill for the current page among pages that are not skipped. The current page is always counted. */
+export function pageProgress(pages: FormPage[], currentIndex: number, values: Record<string, Scalar | undefined>): number {
+    if (pages.length === 0) return 0
+    const active: number[] = []
+    pages.forEach((page, index) => {
+        if (index === currentIndex || !isPageSkipped(page, values)) active.push(index)
+    })
+    if (active.length === 0) return 0
+    const position = active.indexOf(currentIndex)
+    const step = position < 0 ? 1 : position + 1
+    return (step / active.length) * 100
+}
+
 function childItems(item: FormItem, values: Record<string, Scalar | undefined>): FormItem[] {
     if (item.type === "stage") {
         const current = String(values[item.name] ?? "")
