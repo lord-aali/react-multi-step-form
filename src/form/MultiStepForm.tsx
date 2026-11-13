@@ -6,7 +6,7 @@ import {SnackbarProvider, useSnackbar} from "notistack"
 import type {DialogSpec, FormSchema} from "./schema"
 import {resolveTexts} from "./texts"
 import {FormStore, useFormVersion, type Scalar} from "./store"
-import {applyDefaults, collectValues, findStep, isPageValid, pageDialogs, pageProgress} from "./logic"
+import {applyDefaults, collectValues, findStep, isPageSkipped, isPageValid, nextDestination, pageDialogs, pageProgress, syncVisitedPages} from "./logic"
 import {ensureSession, getDataset, insertDataset, loadDraft, resumeByValue, saveDraft, updateDataset, uploadFile} from "./api"
 import type {DraftPayload} from "./store"
 import {DirectionScope} from "./theme/DirectionScope"
@@ -126,6 +126,9 @@ function FormSession({
     const [anim, setAnim] = useState("active")
     const [pending, setPending] = useState<{ spec: DialogSpec; resolve: (ok: boolean) => void } | null>(null)
     const lastSavedRef = useRef<string>("")
+    const visitedRef = useRef<Set<number>>(new Set())
+    const seededVisitRef = useRef(false)
+    const visitFormId = useRef("")
     const readyNotified = useRef(false)
     const ask = useCallback((spec: DialogSpec) => {
         return new Promise<boolean>((resolve) => {
@@ -194,7 +197,15 @@ function FormSession({
                 if (!cancel) lastSavedRef.current = store.saveFingerprint(loaded.id)
             } catch {
             } finally {
-                if (!cancel) setReady(true)
+                if (!cancel) {
+                    if (!seededVisitRef.current) {
+                        seededVisitRef.current = true
+                        loaded.pages.forEach((item, index) => {
+                            if (index <= store.page && !isPageSkipped(item, store.values)) visitedRef.current.add(index)
+                        })
+                    }
+                    setReady(true)
+                }
             }
         })()
         return () => {
@@ -202,11 +213,18 @@ function FormSession({
         }
     }, [loaded, apiBase, store, resumeValue])
 
+    if (loaded && visitFormId.current !== loaded.id) {
+        visitFormId.current = loaded.id
+        visitedRef.current = new Set()
+        seededVisitRef.current = false
+    }
+    if (loaded) syncVisitedPages(loaded.pages, store.page, store.values, visitedRef.current)
+
     const page = loaded?.pages[store.page]
     const pageValid = loaded && page ? isPageValid(page, store, texts, validators) : false
-    const nextIndex = loaded ? findStep(loaded.pages, store.page, 1, store.values) : -1
     const prevIndex = loaded ? findStep(loaded.pages, store.page, -1, store.values) : -1
-    const isLast = nextIndex < 0
+    const destination = loaded ? nextDestination(loaded.pages, store.page, store, texts, validators, visitedRef.current) : -1
+    const isLast = destination < 0
     const progress = loaded ? pageProgress(loaded.pages, store.page, store.values) : 0
 
     async function animateTo(index: number, direction: "next" | "prev") {
@@ -323,16 +341,18 @@ function FormSession({
             const ok = await ask(spec)
             if (!ok) return
         }
+        syncVisitedPages(loaded.pages, store.page, store.values, visitedRef.current)
+        const target = nextDestination(loaded.pages, store.page, store, texts, validators, visitedRef.current)
         setUploading(true)
-        const saved = await saveWithRetry(isLast)
+        const saved = await saveWithRetry(target < 0)
         setUploading(false)
         if (!saved) return
-        if (isLast) {
+        if (target < 0) {
             setFinished(true)
             onFinished?.({id: store.rowId, key: store.rowKey})
             return
         }
-        await animateTo(nextIndex, "next")
+        await animateTo(target, target > store.page ? "next" : "prev")
     }
 
     async function handlePrev() {

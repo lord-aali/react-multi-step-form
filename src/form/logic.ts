@@ -96,6 +96,42 @@ export function pageProgress(pages: FormPage[], currentIndex: number, values: Re
     return (step / active.length) * 100
 }
 
+/** Remember the current page, and forget a page again once it becomes skipped. */
+export function syncVisitedPages(
+    pages: FormPage[],
+    currentIndex: number,
+    values: Record<string, Scalar | undefined>,
+    visited: Set<number>,
+) {
+    if (currentIndex >= 0 && currentIndex < pages.length) visited.add(currentIndex)
+    pages.forEach((page, index) => {
+        if (index !== currentIndex && isPageSkipped(page, values)) visited.delete(index)
+    })
+}
+
+/**
+ * Where Next should go.
+ * -1 means every page that is not skipped has been visited and is valid, so the form can submit.
+ * A page that was skipped and then included again is not visited, so Next opens it before submit.
+ */
+export function nextDestination(
+    pages: FormPage[],
+    currentIndex: number,
+    store: FormStore,
+    texts: FormTexts,
+    validators: ValidatorMap | import("./schema").FormValidator[] = {},
+    visited: ReadonlySet<number> = new Set(),
+): number {
+    const forward = findStep(pages, currentIndex, 1, store.values)
+    if (forward >= 0) return forward
+    for (let index = 0; index < pages.length; index++) {
+        if (index === currentIndex) continue
+        if (isPageSkipped(pages[index], store.values)) continue
+        if (!visited.has(index) || !isPageValid(pages[index], store, texts, validators)) return index
+    }
+    return -1
+}
+
 function childItems(item: FormItem, values: Record<string, Scalar | undefined>): FormItem[] {
     if (item.type === "stage") {
         const current = String(values[item.name] ?? "")
